@@ -265,11 +265,25 @@ function loadTemplate() {
                     var bg = rootDiv.style.background || rootDiv.style.backgroundColor;
                     var bf = rootDiv.style.backdropFilter || rootDiv.style.webkitBackdropFilter;
                     var overlay = document.getElementById("captcha-overlay");
-                    if (bg) overlay.style.background = bg;
+                    if (bg) {
+                        // Si le background du template est semi-transparent (rgba avec alpha < 1),
+                        // on le met sur le captcha-box et on garde l'overlay blanc opaque dessous
+                        if (bg.indexOf('rgba') !== -1 || bg.indexOf('transparent') !== -1) {
+                            overlay.style.background = '#fff';
+                            rootDiv.style.background = bg;
+                        } else {
+                            overlay.style.background = bg;
+                        }
+                    } else {
+                        // Pas de background sur le template → overlay blanc opaque
+                        overlay.style.background = '#fff';
+                    }
                     if (bf) {
                         overlay.style.backdropFilter = bf;
                         overlay.style.webkitBackdropFilter = bf;
                     }
+                } else {
+                    document.getElementById("captcha-overlay").style.background = '#fff';
                 }
 
                 if (data.css) {
