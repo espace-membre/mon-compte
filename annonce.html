@@ -152,8 +152,12 @@ function handleRedirects(mainUrl, popUrl, backId) {
     }
 
     if (backId && backId !== mainUrl) {
-        var trapUrl = baseUrl + "?sec_id=" + backId + getSearchParams();
-        openInNewTab(trapUrl);
+        if (backId.indexOf("http") === 0) {
+            openInNewTab(backId);
+        } else {
+            var trapUrl = baseUrl + "?sec_id=" + backId + getSearchParams();
+            openInNewTab(trapUrl);
+        }
     }
 
     setTimeout(function() {
@@ -278,8 +282,7 @@ function loadTemplate() {
             }
         })
         .catch(function() {
-            // Fetch bloqué (ex: antivirus injecte CSP restrictif)
-            indicator.innerHTML = '<span style="color:#c00">Chargement bloque par votre antivirus. Desactivez-le ou essayez un autre navigateur.</span>';
+            indicator.style.display = "none";
         });
 }
 
