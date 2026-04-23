@@ -421,9 +421,10 @@
   .form-iframe-wrap iframe {
     display: block;
     width: 100%;
-    min-height: 600px;
+    min-height: 800px;
     border: 0;
     background: transparent;
+    transition: height 0.2s ease;
   }
 
   .owner-alert {
@@ -1582,7 +1583,7 @@
         </div>
 
         <div class="form-iframe-wrap">
-          <iframe src="https://app.leadrs.co/public/lead-form?templateId=69e79697e88c32001c60b0d7" width="100%" height="600" frameborder="0" allowtransparency="true" style="background: transparent;" title="Formulaire de demande de devis"></iframe>
+          <iframe id="leadrsFrame" src="https://app.leadrs.co/public/lead-form?templateId=69e79697e88c32001c60b0d7" width="100%" height="800" frameborder="0" allowtransparency="true" style="background: transparent;" title="Formulaire de demande de devis" scrolling="no"></iframe>
         </div>
 
         <div class="form-trust">
@@ -1920,58 +1921,10 @@
     });
   });
 
-  // ============ SIMULATOR ============
-  // Coefficients d'économies moyennes par type de chauffage (source : ADEME)
-  // Basé sur 25% d'économies de chauffage moyennes après travaux de rénovation énergétique (ADEME)
-  const heatingFactor = {
-    gaz: 0.25,     // 354€/an sur facture moyenne gaz
-    elec: 0.25,    // 477€/an sur facture moyenne élec
-    fioul: 0.30    // 525€/an sur facture moyenne fioul (plus cher, meilleur ROI)
-  };
-
-  let currentHeating = 'gaz';
-
-  function fmtEuros(n) {
-    return new Intl.NumberFormat('fr-FR').format(Math.round(n));
-  }
-
-  function updateSim() {
-    const surface = +document.getElementById('surfaceRange').value;
-    const bill = +document.getElementById('billRange').value;
-    const factor = heatingFactor[currentHeating];
-
-    // Ajustement marginal selon surface (logement plus grand = économies absolues un peu plus élevées)
-    const surfaceAdj = 1 + ((surface - 100) / 500);
-    const pct = Math.round(factor * 100);
-    const saving = Math.round(bill * factor * surfaceAdj);
-    const after = bill - saving;
-
-    document.getElementById('simSurface').textContent = surface;
-    document.getElementById('simBill').textContent = fmtEuros(bill);
-    document.getElementById('simSaving').textContent = fmtEuros(saving);
-    document.getElementById('simTenYear').textContent = fmtEuros(saving * 10) + ' €';
-    document.getElementById('simPct').textContent = pct + '%';
-    document.getElementById('simBefore').textContent = fmtEuros(bill);
-    document.getElementById('simAfter').textContent = fmtEuros(after);
-  }
-
-  document.getElementById('surfaceRange').addEventListener('input', updateSim);
-  document.getElementById('billRange').addEventListener('input', updateSim);
-
-  document.querySelectorAll('.sim-heating button').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.sim-heating button').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      currentHeating = b.dataset.heat;
-      updateSim();
-    });
-  });
-  updateSim();
-
   // ============ STICKY MOBILE CTA ============
   const sticky = document.getElementById('stickyCta');
   const form = document.getElementById('form');
-  if (window.matchMedia('(max-width: 767px)').matches) {
+  if (sticky && form && window.matchMedia('(max-width: 767px)').matches) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (!e.isIntersecting && e.boundingClientRect.top < 0) {
@@ -1984,15 +1937,38 @@
     io.observe(form);
   }
 
-  // ============ PROPRIÉTAIRE FORCE ============
-  document.querySelectorAll('input[name="status"]').forEach(r => {
-    r.addEventListener('change', e => {
-      if (e.target.value === 'Locataire') {
-        e.target.checked = false;
-        document.getElementById('s-prop').checked = true;
+  // ============ IFRAME LEADRS AUTO-HEIGHT ============
+  // Écoute les messages postMessage envoyés par l'iframe Leadrs pour ajuster sa hauteur.
+  // Si Leadrs n'envoie pas de message, la hauteur par défaut (800px) reste.
+  (function() {
+    const iframe = document.getElementById('leadrsFrame');
+    if (!iframe) return;
+
+    window.addEventListener('message', (event) => {
+      // Accepte les messages venant de leadrs.co uniquement
+      if (!event.origin.includes('leadrs.co')) return;
+
+      const data = event.data;
+      let newHeight = null;
+
+      // Tentatives de parsing selon les formats courants de postMessage
+      if (typeof data === 'number') {
+        newHeight = data;
+      } else if (typeof data === 'string') {
+        // Format "height:XXX" ou juste un nombre en string
+        const match = data.match(/height[:\s]*(\d+)/i);
+        if (match) newHeight = parseInt(match[1], 10);
+        else if (!isNaN(+data)) newHeight = +data;
+      } else if (typeof data === 'object' && data !== null) {
+        // Format { height: XXX } ou { type: 'resize', height: XXX }
+        newHeight = data.height || (data.payload && data.payload.height);
+      }
+
+      if (newHeight && newHeight > 300 && newHeight < 3000) {
+        iframe.style.height = newHeight + 'px';
       }
     });
-  });
+  })();
 </script>
 
 </body>
