@@ -440,10 +440,10 @@
     supabaseTable: 'submissions', // table cible (créée par supabase-schema.sql)
 
     // Routage disqualifiés
-    comparateurUrl: 'https://example.com/comparateur-energie', // LP comparateur (locataire qui skippe)
+    comparateurUrl: 'https://6nr4kuIFMglPY5q-c.vokar.co?o=2341&a=2387&k=8707&s=175277&d=4178&affclickid=&email=&firstName=&lastName=&phoneNumberMobile=&address=', // LP comparateur affilié (locataire qui skippe)
 
     // Concours
-    giftName: 'une carte cadeau de 100 €',
+    giftName: 'une carte cadeau Amazon de 100 €',
 
     // Divers
     privacyUrl: '#', // URL politique de confidentialité
@@ -459,7 +459,7 @@
 
   // récup email depuis URL (base64 ou clair)
   (function(){
-    var raw = qs.get(CONFIG.emailParam) || qs.get('email') || '';
+    var raw = qs.get('u') || qs.get(CONFIG.emailParam) || qs.get('email') || '';
     if(raw){
       try { var dec = atob(decodeURIComponent(raw)); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dec)) raw = dec; } catch(e){}
       if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)){ emailFromUrl = raw; data.email = raw; }
@@ -690,8 +690,10 @@
   /* ---- cascade comparateur (locataire qui skippe) ---- */
   window.toComparateur = function(){
     if(CONFIG.comparateurUrl){
-      try{ window.top.location.href = CONFIG.comparateurUrl; }
-      catch(e){ window.location.href = CONFIG.comparateurUrl; }
+      var em = emailFromUrl || data.email || '';
+      var dest = CONFIG.comparateurUrl.replace('&email=', '&email=' + encodeURIComponent(em));
+      try{ window.top.location.href = dest; }
+      catch(e){ window.location.href = dest; }
     } else { goStep('s-final-thanks'); }
   };
 
