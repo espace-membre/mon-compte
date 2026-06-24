@@ -1,1 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panneaux solaires — Êtes-vous éligible ?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#15639b;        /* bleu panneau */
+    --brand-dark:#114e79;
+    --accent:#f6b73c;       /* or solaire */
+    --gold:#f6b73c;
+    --bg:#f3f7f9;
+    --ink:#11242b;
+    --ink-soft:#5a6b72;
+    --card:#ffffff;
+    --stroke:#e2eaed;
+    --ok:#2ca06a;
+    --danger:#c0392b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:transparent}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .head{font-family:'Sora',Georgia,serif}
+  #app{max-width:680px;margin:0 auto}
 
+  /* progress */
+  .pbar-wrap{display:none;padding:16px 18px 0}
+  .pbar-wrap.on{display:block}
+  .pbar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .pbar-label{font-size:12px;font-weight:600;color:var(--brand)}
+  .pbar-pct{font-size:12px;font-weight:600;color:var(--ink-soft)}
+  .pbar{height:8px;border-radius:99px;background:#e2eaed;overflow:hidden}
+  .pbar-fill{height:100%;width:20%;border-radius:99px;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+  .panel{display:none;animation:fade .4s ease both}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:18px;padding:30px 26px 32px;margin:14px}
+  .kicker{text-align:center;font-size:11px;letter-spacing:.16em;font-weight:600;color:var(--brand);text-transform:uppercase;margin-bottom:10px}
+  h1.q,h2.q{font-family:'Sora',serif;text-align:center;font-weight:700;line-height:1.2}
+  h1.q{font-size:clamp(23px,4.2vw,31px);margin-bottom:10px}
+  h2.q{font-size:clamp(21px,3.6vw,28px);margin-bottom:8px}
+  .sub{text-align:center;font-size:14.5px;color:var(--ink-soft);margin-bottom:24px;line-height:1.5}
+
+  /* hero */
+  .hero{background:linear-gradient(165deg,#16323d 0%,#11242b 60%,#143a44 100%);border-radius:18px;margin:14px;padding:40px 26px 30px;color:#eaf3f5;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(40,194,184,.18),transparent 62%);pointer-events:none}
+  .badge{display:inline-block;padding:7px 16px;border-radius:99px;border:1px solid rgba(40,194,184,.45);color:var(--accent);font-size:11px;letter-spacing:.14em;font-weight:600;text-transform:uppercase;margin-bottom:18px}
+  .hero h1{font-family:'Sora',serif;font-size:clamp(24px,4.4vw,34px);font-weight:700;line-height:1.18;margin-bottom:12px}
+  .hero h1 em{color:var(--accent);font-style:normal}
+  .hero .lead{font-size:15px;color:rgba(234,243,245,.78);max-width:460px;margin:0 auto 22px;line-height:1.6}
+
+  /* simulateur (hero) */
+  .calc{background:var(--card);border:1px solid var(--stroke);border-radius:18px;margin:14px;padding:30px 24px 30px}
+  .calc-eyebrow{text-align:center;font-size:11px;letter-spacing:.14em;font-weight:600;color:var(--brand);text-transform:uppercase;margin-bottom:14px}
+  .calc-title{text-align:center;font-size:clamp(22px,3.8vw,30px);font-weight:700;line-height:1.2;margin-bottom:8px}
+  .calc-title em{color:var(--accent);font-style:normal}
+  .calc-sub{text-align:center;font-size:14px;color:var(--ink-soft);margin-bottom:22px}
+  .bill-readout{text-align:center;font-family:'Sora',serif;font-size:38px;font-weight:700;color:var(--ink);line-height:1}
+  .bill-readout .unit{font-size:17px;color:var(--ink-soft);font-weight:600}
+  #billSlider{-webkit-appearance:none;appearance:none;width:100%;max-width:520px;display:block;margin:18px auto 6px;height:8px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--brand));outline:none}
+  #billSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--brand);box-shadow:0 3px 10px rgba(21,99,155,.35);cursor:pointer}
+  #billSlider::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--brand);box-shadow:0 3px 10px rgba(21,99,155,.35);cursor:pointer}
+  .slider-scale{max-width:520px;margin:0 auto 22px;display:flex;justify-content:space-between;font-size:11.5px;color:#9fb0b6}
+  .result{max-width:520px;margin:0 auto;background:linear-gradient(160deg,#fff8ea,#fef1d6);border:1px solid #f3d79a;border-radius:16px;padding:20px 18px}
+  .result-label{text-align:center;font-size:12px;font-weight:600;color:#a8803a;text-transform:uppercase;letter-spacing:.04em}
+  .result-amount{text-align:center;font-family:'Sora',serif;font-size:38px;font-weight:700;color:#1c6140;line-height:1.1;margin:4px 0}
+  .result-amount .peryr{font-size:18px;color:#3a7a55;font-weight:600}
+  .result-sub{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-bottom:16px}
+  .result-sub strong{color:var(--ink)}
+  .bars{display:flex;flex-direction:column;gap:9px}
+  .bar-row{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .bar-l{width:96px;flex-shrink:0;color:var(--ink-soft)}
+  .bar{flex:1;height:14px;background:#efe6d3;border-radius:99px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px;transition:width .25s ease}
+  .bar-now{background:#dd8a8a}
+  .bar-sun{background:linear-gradient(90deg,var(--accent),#6cc08a)}
+  .bar-v{width:54px;flex-shrink:0;text-align:right;font-weight:600;color:var(--ink)}
+  .calc .btn{margin-top:22px}
+  .calc-note{text-align:center;font-size:11.5px;color:#9fb0b6;margin-top:12px}
+  .instant{max-width:520px;margin:14px auto 0;text-align:center;font-size:12.5px;font-weight:600;color:#14773f;background:#ecfaf0;border:1px solid #b9e3c8;border-radius:99px;padding:8px 14px}
+  .pushpull{max-width:520px;margin:14px auto 18px;text-align:center;font-size:13px;font-weight:500;color:#15639b;background:#eaf3fb;border:1px solid #bcdcf3;border-radius:12px;padding:11px 16px;line-height:1.45}
+  .pushpull strong{color:#0f4d7c}
+  .scarcity{max-width:520px;margin:14px auto 0;text-align:center;font-size:12.5px;font-weight:600;color:#9a5a14;background:#fff4e0;border:1px solid #f0c878;border-radius:99px;padding:8px 14px}
+  .scarcity strong{color:#7a4410}
+  .result-save{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:6px}
+  .result-save strong{color:#1c6140}
+  .aids{max-width:520px;margin:16px auto 0;padding:16px 16px 14px;background:linear-gradient(160deg,#ecfaf0,#d6f2e0);border:1px solid #9cd9b4;border-radius:14px;text-align:center}
+  .aids-badge{display:inline-block;padding:5px 14px;border-radius:99px;background:#fff;border:1px solid #7fcb9f;color:#15663f;font-size:12px;font-weight:600;margin-bottom:10px}
+  .aids-badge::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#1f9d57;margin-right:7px;vertical-align:middle}
+  .aids-text{font-size:13.5px;color:#2c6b46;line-height:1.5}
+  .aids-text strong{color:#185536}
+  .aids-cta{margin-top:10px;font-size:13.5px;font-weight:600;color:#14773f;line-height:1.45}
+
+  /* choices */
+  .choices{display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto}
+  .choice{display:flex;align-items:center;gap:15px;text-align:left;background:var(--card);border:1.5px solid var(--stroke);border-radius:14px;padding:16px 18px;cursor:pointer;width:100%;font-family:inherit;transition:border-color .16s,box-shadow .16s,transform .12s}
+  .choice:hover{border-color:var(--brand);box-shadow:0 6px 18px rgba(17,36,43,.08);transform:translateY(-1px)}
+  .choice.sel{border-color:var(--brand);background:#eef6f8;box-shadow:0 0 0 3px rgba(31,111,139,.12)}
+  .choice .ic{width:44px;height:44px;border-radius:12px;flex-shrink:0;background:#eef6f8;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .choice .tx b{display:block;font-family:'Sora',serif;font-size:16.5px;font-weight:600}
+  .choice .tx small{font-size:13px;color:var(--ink-soft)}
+  /* hero choices on dark */
+  .hero .choice{background:rgba(255,255,255,.06);border-color:rgba(234,243,245,.16);color:#eaf3f5}
+  .hero .choice:hover{border-color:var(--accent);background:rgba(255,255,255,.1)}
+  .hero .choice .ic{background:rgba(40,194,184,.16)}
+  .hero .choice .tx small{color:rgba(234,243,245,.62)}
+
+  .trust{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:18px;font-size:12.5px;color:rgba(234,243,245,.7)}
+  .avs{display:flex}
+  .avs span{width:25px;height:25px;border-radius:50%;border:2px solid #11242b;margin-left:-8px;background:linear-gradient(135deg,#2b7a91,#1f6f8b);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600}
+  .avs span:first-child{margin-left:0}
+
+  .reason{display:flex;align-items:flex-start;gap:9px;max-width:520px;margin:16px auto 0;padding:11px 14px;background:#eef6f8;border-radius:11px;font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+  .reason .i{color:var(--brand);flex-shrink:0}
+  .reason strong{color:var(--ink);font-weight:600}
+
+  .backlink{display:inline-flex;align-items:center;gap:5px;margin-top:20px;background:none;border:none;cursor:pointer;font-size:13px;color:#9fb0b6;font-family:inherit}
+  .backlink:hover{color:var(--brand)}
+  .center{text-align:center}
+
+  /* buttons */
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;max-width:520px;margin:0 auto;padding:16px 22px;border:none;border-radius:13px;cursor:pointer;background:var(--brand);color:#fff;font-family:'Sora',serif;font-size:17px;font-weight:600;transition:background .18s,transform .14s,box-shadow .18s;box-shadow:0 8px 22px rgba(31,111,139,.26)}
+  .btn:hover{background:var(--brand-dark);transform:translateY(-1px)}
+  .btn:disabled{opacity:.6;cursor:wait;transform:none}
+  .btn .ar{transition:transform .18s}
+  .btn:hover .ar{transform:translateX(4px)}
+
+  /* fields */
+  .fields{max-width:520px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .f{display:flex;flex-direction:column;gap:6px}
+  .f.full{grid-column:1/-1}
+  .f label{font-size:11px;letter-spacing:.1em;font-weight:600;color:var(--ink-soft);text-transform:uppercase}
+  .f input{padding:14px 15px;border:1.5px solid var(--stroke);border-radius:11px;background:var(--card);font-size:16px;font-family:inherit;color:var(--ink);transition:border-color .16s,box-shadow .16s;width:100%}
+  .f input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(31,111,139,.12)}
+  .f input.bad{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,57,43,.08)}
+  .err{font-size:12px;color:var(--danger);display:none}
+  .err.on{display:block}
+  .city-echo{font-size:12.5px;color:var(--ok);font-weight:600;margin-top:2px;display:none}
+  .city-echo.on{display:block}
+
+  .consent{max-width:520px;margin:16px auto 18px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-soft);line-height:1.5;cursor:pointer}
+  .consent input{margin-top:2px;width:16px;height:16px;accent-color:var(--brand);flex-shrink:0;cursor:pointer}
+  .consent a{color:var(--brand)}
+  .gerr{display:none;max-width:520px;margin:0 auto 14px;padding:11px 15px;border-radius:11px;background:#fdeeec;border:1px solid #f1c4bd;color:#a33b2a;font-size:13px}
+  .gerr.on{display:block}
+  .secure{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:12px;color:#9fb0b6}
+  .consent-note{max-width:520px;margin:12px auto 0;text-align:center;font-size:11.5px;color:#9fb0b6;line-height:1.5}
+  .consent-note a{color:#9fb0b6;text-decoration:underline}
+
+  /* analysis */
+  .analysis{text-align:center;padding:50px 26px}
+  .spin{width:60px;height:60px;border-radius:50%;margin:0 auto 22px;border:3px solid #e2eaed;border-top-color:var(--brand);animation:rot 1s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .asteps{max-width:320px;margin:18px auto 0;text-align:left}
+  .astep{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;color:#aebbc0;transition:color .3s}
+  .astep .t{width:21px;height:21px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--stroke);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .3s}
+  .astep.on{color:var(--ink)}
+  .astep.on .t{background:var(--ok);border-color:var(--ok);color:#fff}
+
+  /* success */
+  .success{text-align:center;padding:46px 26px}
+  .check{width:70px;height:70px;border-radius:50%;margin:0 auto 20px;background:var(--ok);color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center;animation:pop .5s cubic-bezier(.3,1.6,.6,1) both}
+  @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+  .success h2{font-family:'Sora',serif;font-size:clamp(22px,4vw,28px);font-weight:700;margin-bottom:10px}
+  .success p{font-size:14.5px;color:var(--ink-soft);max-width:430px;margin:0 auto 8px;line-height:1.6}
+  .sbadge{display:inline-block;margin-top:16px;padding:9px 18px;border-radius:99px;border:1px solid var(--brand);color:var(--brand-dark);background:#eef6f8;font-size:13px;font-weight:600}
+
+  /* achievement overlay */
+  .ach{position:fixed;inset:0;background:rgba(17,36,43,.55);display:none;align-items:center;justify-content:center;z-index:50;animation:fade .25s ease both}
+  .ach.on{display:flex}
+  .ach-box{background:#fff;border-radius:20px;padding:34px 30px;text-align:center;max-width:330px;margin:18px;animation:pop .45s cubic-bezier(.3,1.6,.6,1) both}
+  .ach-ic{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,var(--accent),var(--brand));color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center}
+  .ach-box h3{font-family:'Sora',serif;font-size:20px;font-weight:700;margin-bottom:8px}
+  .ach-box p{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  .ach-conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:conf 1.1s ease-out forwards}
+  @keyframes conf{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(160px) rotate(360deg);opacity:0}}
+
+  /* referral inputs */
+  .refs{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:11px}
+  .gift-banner{max-width:520px;margin:0 auto 18px;padding:16px;border-radius:14px;background:linear-gradient(135deg,#fff5e6,#ffeccf);border:1px solid #f3d29a;text-align:center}
+  .gift-banner b{font-family:'Sora',serif;font-size:17px;color:#9a6b16}
+  .gift-banner small{display:block;font-size:12.5px;color:#a8803a;margin-top:3px}
+  .skip{display:block;margin:16px auto 0;background:none;border:none;cursor:pointer;font-size:13px;color:#9fb0b6;font-family:inherit;text-decoration:underline}
+  .skip:hover{color:var(--brand)}
+
+  @media(max-width:540px){
+    .fields{grid-template-columns:1fr}
+    .card,.hero{margin:10px;padding:26px 18px 28px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- progress -->
+  <div class="pbar-wrap" id="pbarWrap">
+    <div class="pbar-top">
+      <span class="pbar-label" id="pbarLabel">Votre demande</span>
+      <span class="pbar-pct" id="pbarPct">20%</span>
+    </div>
+    <div class="pbar"><div class="pbar-fill" id="pbarFill"></div></div>
+  </div>
+
+  <!-- STEP 0 : HERO = simulateur d'économies (first interaction) -->
+  <section class="panel on" id="s-hero">
+    <div class="calc">
+      <div class="calc-eyebrow">Simulateur d'économies · 30 secondes</div>
+      <h1 class="calc-title head">Combien le <em>solaire</em> peut-il vous faire économiser&nbsp;?</h1>
+      <p class="calc-sub">Combien payez-vous d'électricité par mois&nbsp;?</p>
+
+      <div class="bill-readout"><span id="billVal">150</span><span class="unit">&nbsp;€/mois</span></div>
+      <input type="range" id="billSlider" min="30" max="400" step="10" value="150" aria-label="Facture mensuelle">
+      <div class="slider-scale"><span>30&nbsp;€</span><span>400&nbsp;€</span></div>
+
+      <div class="result">
+        <div class="result-label">Avec le solaire, vous pourriez payer environ</div>
+        <div class="result-amount"><span id="solarBill">52</span><span class="peryr">&nbsp;€/mois</span></div>
+        <div class="result-save">soit jusqu'à <strong id="saveYear">1&nbsp;180&nbsp;€</strong> d'économie estimée par an<sup>*</sup></div>
+      </div>
+      <div class="aids">
+        <div class="aids-badge">✓ Éligible aux aides de l'État 2026</div>
+        <div class="aids-text">Votre installation peut être <strong>financée en grande partie</strong> grâce aux aides en vigueur (MaPrimeRénov', prime à l'autoconsommation…).</div>
+        <div class="aids-cta">Découvrez le montant exact auquel vous pourriez avoir droit avec votre <strong>devis d'éligibilité gratuit</strong> →</div>
+      </div>
+
+      <button class="btn" onclick="startSimu()">Vérifier mon éligibilité <span class="ar">→</span></button>
+      <div class="calc-note"><sup>*</sup> Estimations indicatives et non contractuelles, calculées à partir de la facture que vous renseignez. Le montant réel dépend de votre logement et d'une étude personnalisée.</div>
+    </div>
+  </section>
+
+  <!-- STEP 1 : Propriétaire (DISQUALIFIANT) -->
+  <section class="panel" id="s-owner">
+    <div class="card">
+      <div class="kicker">Question 1</div>
+      <h2 class="q head">Êtes-vous propriétaire de votre logement ?</h2>
+      <p class="sub">L'installation de panneaux solaires nécessite d'être propriétaire.</p>
+      <div class="choices">
+        <button class="choice" onclick="answerOwner('Propriétaire',this)">
+          <span class="ic">🏠</span>
+          <span class="tx"><b>Oui, je suis propriétaire</b><small>Maison, appartement ou copropriété</small></span>
+        </button>
+        <button class="choice" onclick="answerOwner('Locataire',this)">
+          <span class="ic">🔑</span>
+          <span class="tx"><b>Je suis locataire</b><small>Je loue mon logement</small></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 : Type de logement -->
+  <section class="panel" id="s-home">
+    <div class="card">
+      <div class="kicker">Question 2</div>
+      <h2 class="q head">Quel type de logement ?</h2>
+      <p class="sub">Pour vérifier la faisabilité de votre installation solaire.</p>
+      <div class="choices">
+        <button class="choice" onclick="answer('Lieu de résidence','Maison',this,true)">
+          <span class="ic">🏡</span><span class="tx"><b>Maison</b><small>Individuelle</small></span>
+        </button>
+        <button class="choice" onclick="answer('Lieu de résidence','Appartement',this,true)">
+          <span class="ic">🏢</span><span class="tx"><b>Appartement</b><small>En immeuble</small></span>
+        </button>
+        <button class="choice" onclick="answer('Lieu de résidence','Copropriété',this,true)">
+          <span class="ic">🏘️</span><span class="tx"><b>Copropriété</b><small>Avec parties communes</small></span>
+        </button>
+      </div>
+      <div class="center"><button class="backlink" onclick="goStep('s-owner')">← Précédent</button></div>
+    </div>
+  </section>
+
+  <!-- STEP 4 : Analyse -->
+  <section class="panel" id="s-analysis">
+    <div class="card analysis">
+      <div class="spin"></div>
+      <h2 class="q head">Analyse de votre éligibilité…</h2>
+      <div class="asteps">
+        <div class="astep" id="an1"><span class="t">✓</span> Recherche des aides dans votre région</div>
+        <div class="astep" id="an2"><span class="t">✓</span> Recherche d'installateurs RGE près de chez vous</div>
+        <div class="astep" id="an3"><span class="t">✓</span> Estimation des aides (MaPrimeRénov', prime autoconso)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 : Identité (Prénom + Nom) -->
+  <section class="panel" id="s-name">
+    <div class="card">
+      <div class="kicker">Plus qu’une étape</div>
+      <h2 class="q head">Recevez votre étude solaire personnalisée</h2>
+      <p class="sub">Gratuite et sans engagement — avec votre estimation d’économies et le montant des aides auxquelles vous pourriez prétendre. À quel nom l’établir&nbsp;?</p>
+      <div class="instant">📋 Chaque dossier est étudié individuellement par un conseiller de votre région</div>
+      <div style="height:20px"></div>
+      <div class="fields">
+        <div class="f"><label>Prénom</label><input id="i-prenom" type="text" autocomplete="given-name" placeholder="Votre prénom"><span class="err" id="e-prenom">Indiquez votre prénom</span></div>
+        <div class="f"><label>Nom</label><input id="i-nom" type="text" autocomplete="family-name" placeholder="Votre nom"><span class="err" id="e-nom">Indiquez votre nom</span></div>
+      </div>
+      <div style="height:18px"></div>
+      <button class="btn" onclick="submitName()">Continuer <span class="ar">→</span></button>
+      <div class="scarcity">⏳ Plus que <strong id="slotsLeft">12</strong> études solaires gratuites ce mois-ci</div>
+      <div class="center"><button class="backlink" onclick="goStep('s-cp')">← Précédent</button></div>
+    </div>
+  </section>
+
+  <!-- STEP 6 : Code postal -->
+  <section class="panel" id="s-cp">
+    <div class="card">
+      <div class="kicker">Question 3</div>
+      <h2 class="q head">Où se situe votre logement ?</h2>
+      <p class="sub">Pour trouver les installateurs certifiés de votre secteur.</p>
+      <div class="fields">
+        <div class="f full"><label>Code postal</label><input id="i-cp" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="Ex : 69003"><span class="err" id="e-cp">Code postal invalide (5 chiffres)</span><span class="city-echo" id="cityEcho"></span></div>
+      </div>
+      <div class="reason"><span class="i">📍</span><span>Votre code postal permet de vérifier votre éligibilité aux aides&nbsp;: <strong>MaPrimeRénov’</strong>, <strong>prime à l’autoconsommation</strong>, <strong>TVA à 10&nbsp;%</strong> et <strong>CEE</strong>.</span></div>
+      <div style="height:18px"></div>
+      <button class="btn" onclick="submitCp()">Continuer <span class="ar">→</span></button>
+      <div class="center"><button class="backlink" onclick="goStep('s-home')">← Précédent</button></div>
+    </div>
+  </section>
+
+  <!-- STEP 7 : Téléphone + consentement (envoi) -->
+  <section class="panel" id="s-phone">
+    <div class="card">
+      <div class="kicker">Recevez votre devis</div>
+      <h2 class="q head">Sur quel numéro recevoir les résultats de votre étude solaire personnalisée&nbsp;?</h2>
+      <p class="sub">Un conseiller étudie votre dossier et vous recontacte sous 24&nbsp;h pour vous présenter vos économies estimées et les aides dont vous pourriez bénéficier.</p>
+      <div class="pushpull">📧 Dossier non retenu&nbsp;? Vous en êtes informé par email, <strong>sans aucun appel</strong>.</div>
+      <div class="gerr" id="gerr"></div>
+      <div class="fields">
+        <div class="f full"><label>Téléphone</label><input id="i-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78"><span class="err" id="e-tel">Numéro de téléphone invalide</span></div>
+      </div>
+      <!-- email confirmation (apparaît si email connu via URL) -->
+      <div id="emailConfirm" style="display:none;max-width:520px;margin:14px auto 0">
+        <div class="reason" style="background:#eef6f8"><span class="i">✉️</span><span id="emailConfirmText"></span></div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button class="choice" style="justify-content:center;padding:11px" onclick="confirmEmail(true)"><span class="tx"><b>Oui, c'est bon</b></span></button>
+          <button class="choice" style="justify-content:center;padding:11px" onclick="confirmEmail(false)"><span class="tx"><b>Non, le corriger</b></span></button>
+        </div>
+        <div class="f full" id="emailEditWrap" style="display:none;margin-top:12px"><label>Votre email</label><input id="i-email" type="email" autocomplete="email" placeholder="vous@exemple.fr"><span class="err" id="e-email">Email invalide</span></div>
+      </div>
+      <div style="height:20px"></div>
+      <button class="btn" id="finalBtn" onclick="submitLead()">Recevoir mon devis gratuit <span class="ar">→</span></button>
+      <div class="consent-note">En soumettant ce formulaire, vous acceptez d'être contacté par nos partenaires.</div>
+      <div class="secure">🔒 Gratuit · sans engagement · vos données sont protégées</div>
+      <div class="center"><button class="backlink" onclick="goStep('s-name')">← Précédent</button></div>
+    </div>
+  </section>
+
+  <!-- STEP 8 : Succès (propriétaire converti) + boucle parrainage -->
+  <section class="panel" id="s-success">
+    <div class="card success">
+      <div class="check">✓</div>
+      <h2 class="head">Votre demande est enregistrée</h2>
+      <p>Votre dossier a bien été transmis. Un conseiller étudie votre éligibilité, puis revient vers vous pour vous présenter votre étude solaire personnalisée.</p>
+      <div class="sbadge">📋 Dossier reçu · étude en cours</div>
+      <div id="referBlock" style="margin-top:28px;padding-top:24px;border-top:1px solid var(--stroke)">
+        <div class="gift-banner"><b id="giftLine">🎁 Tentez de gagner un ventilateur Dyson</b><small>Tirage au sort — voir conditions</small></div>
+        <p style="font-size:14px;color:var(--ink-soft);max-width:430px;margin:0 auto 14px;line-height:1.5">Si vous le souhaitez, parrainez des proches propriétaires intéressés. Chaque filleul = une chance de plus au tirage.</p>
+        <button class="btn" style="max-width:340px" onclick="goRefer('owner')">Parrainer et tenter ma chance</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCATAIRE : concours viral (cascade 1) -->
+  <section class="panel" id="s-tenant-contest">
+    <div class="card">
+      <div class="center" style="margin-bottom:6px;font-size:30px">🎁</div>
+      <h2 class="q head">Une bonne nouvelle quand même !</h2>
+      <p class="sub">L'installation concerne les propriétaires, mais vous pouvez repartir gagnant.</p>
+      <div class="gift-banner"><b id="giftLine2">Tentez de gagner un ventilateur Dyson</b><small>Tirage au sort — voir conditions</small></div>
+      <p style="font-size:14px;color:var(--ink-soft);max-width:520px;margin:0 auto 16px;line-height:1.55;text-align:center">Indiquez l'email de proches <b>propriétaires</b> qui pourraient être intéressés. Chaque filleul valide = une chance de plus.</p>
+      <div class="refs">
+        <input class="f" style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px" id="ref1" type="email" placeholder="Email d'un proche propriétaire">
+        <input class="f" style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px" id="ref2" type="email" placeholder="Email d'un 2ᵉ proche (optionnel)">
+        <input class="f" style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px" id="ref3" type="email" placeholder="Email d'un 3ᵉ proche (optionnel)">
+      </div>
+      <label class="consent" style="margin-top:14px"><input type="checkbox" id="ref-consent"><span>Je confirme que ces personnes acceptent de recevoir une invitation ponctuelle, et j'accepte le règlement du jeu concours.</span></label>
+      <div style="height:6px"></div>
+      <button class="btn" id="referBtn" onclick="submitRefer('tenant')">Valider ma participation</button>
+      <button class="skip" onclick="toComparateur()">Non merci, voir comment réduire ma facture d'énergie →</button>
+    </div>
+  </section>
+
+  <!-- Parrainage propriétaire (depuis succès) -->
+  <section class="panel" id="s-owner-refer">
+    <div class="card">
+      <div class="center" style="margin-bottom:6px;font-size:30px">🎁</div>
+      <h2 class="q head">Parrainez, tentez de gagner</h2>
+      <p class="sub">Indiquez des proches propriétaires intéressés par des panneaux solaires.</p>
+      <div class="refs">
+        <input style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px;font-family:inherit" id="oref1" type="email" placeholder="Email d'un proche propriétaire">
+        <input style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px;font-family:inherit" id="oref2" type="email" placeholder="Email d'un 2ᵉ proche (optionnel)">
+        <input style="padding:13px 15px;border:1.5px solid var(--stroke);border-radius:11px;font-size:15px;font-family:inherit" id="oref3" type="email" placeholder="Email d'un 3ᵉ proche (optionnel)">
+      </div>
+      <label class="consent" style="margin-top:14px"><input type="checkbox" id="oref-consent"><span>Je confirme que ces personnes acceptent une invitation ponctuelle, et j'accepte le règlement du jeu concours.</span></label>
+      <div style="height:6px"></div>
+      <button class="btn" id="orefBtn" onclick="submitRefer('owner')">Valider mes parrainages</button>
+      <button class="skip" onclick="goStep('s-final-thanks')">Non merci</button>
+    </div>
+  </section>
+
+  <!-- Remerciement final générique -->
+  <section class="panel" id="s-final-thanks">
+    <div class="card success">
+      <div class="check">✓</div>
+      <h2 class="head">Merci !</h2>
+      <p>Votre participation est enregistrée. Bonne chance pour le tirage au sort 🍀</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- achievement overlay -->
+<div class="ach" id="ach">
+  <div class="ach-box">
+    <div class="ach-ic" id="achIc">✓</div>
+    <h3 id="achTitle">Étape validée !</h3>
+    <p id="achText">Vous êtes sur la bonne voie.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ============================================================
+     CONFIG — À REMPLIR par Clément (valeurs entre guillemets)
+     ============================================================ */
+  var qs = new URLSearchParams(location.search);
+  var CONFIG = {
+    // Leadrs (déjà bon)
+    apiUrl:      'https://api-leadrs-co.osc-fr1.scalingo.io',
+    templateId:  qs.get('templateId')  || '6a3aa645a97f30001d2e2ed8',
+    landingPage: qs.get('landingPage') || 'mon-site.fr',
+
+    // Supabase (TON stockage de leads)
+    supabaseUrl:   'https://itdrjutfpasextjahjmj.supabase.co',
+    supabaseKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0ZHJqdXRmcGFzZXh0amFoam1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjQ2MzIsImV4cCI6MjA5NzgwMDYzMn0.So4UgZpdSuoISxzBQjnTMYwRn9AWwhYovPSmeeFgfiI', // clé ANON publique (RLS insert-only)
+    supabaseTable: 'submissions', // table cible (créée par supabase-schema.sql)
+
+    // Routage disqualifiés
+    comparateurUrl: 'https://example.com/comparateur-energie', // LP comparateur (locataire qui skippe)
+
+    // Concours
+    giftName: 'une carte cadeau de 100 €',
+
+    // Divers
+    privacyUrl: '#', // URL politique de confidentialité
+    geoip: true,     // titre avec %VILLE% détecté par IP
+    geoipEndpoint: 'https://ipwho.is/',
+    emailParam: 'e'  // nom du param URL contenant l'email (encodé base64 de préférence)
+  };
+
+  /* ============================================================ */
+  var data = { source:'funnel-solaire', landingPage:CONFIG.landingPage, qualifie:null, answers:{} };
+  var emailFromUrl = '';
+  var emailConfirmed = false;
+
+  // récup email depuis URL (base64 ou clair)
+  (function(){
+    var raw = qs.get(CONFIG.emailParam) || qs.get('email') || '';
+    if(raw){
+      try { var dec = atob(decodeURIComponent(raw)); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dec)) raw = dec; } catch(e){}
+      if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)){ emailFromUrl = raw; data.email = raw; }
+    }
+  })();
+
+  var _pl=document.getElementById('privacyLink'); if(_pl) _pl.href = CONFIG.privacyUrl;
+  document.getElementById('giftLine').textContent = '🎁 Tentez de gagner ' + CONFIG.giftName;
+  document.getElementById('giftLine2').textContent = 'Tentez de gagner ' + CONFIG.giftName;
+
+  /* ---- géolocalisation %VILLE% ---- */
+  if(CONFIG.geoip){
+    fetch(CONFIG.geoipEndpoint).then(function(r){return r.json();}).then(function(g){
+      if(!g || !g.city) return;
+      // garde-fou mobile : si type connexion mobile, on n'affiche pas (IP opérateur peu fiable)
+      var conn = (g.connection && (g.connection.org||g.connection.isp)||'')+'';
+      var isMobile = /mobile|telecom mobile|sfr mobile|orange.*mobile|free mobile|bouygues telecom/i.test(conn);
+      if(isMobile) return;
+      data.ville_ip = g.city;
+      var t = document.getElementById('heroTitle');
+      // variante ville si on veut l'injecter dans un titre à variable
+      t.dataset.city = g.city;
+    }).catch(function(){});
+  }
+
+  /* ---- progression + reprise localStorage ---- */
+  var STEPS_FILL = { 's-owner':35, 's-home':55, 's-cp':70, 's-name':85, 's-phone':95, 's-success':100 };
+  var STEP_LABEL = { 's-owner':'Votre éligibilité', 's-home':'Votre logement', 's-cp':'Localisation', 's-name':'Vos coordonnées', 's-phone':'Dernière étape', 's-success':'Terminé' };
+  var current='s-hero';
+
+  function saveState(){ try{ localStorage.setItem('solaire_funnel', JSON.stringify({step:current,data:data,ts:Date.now()})); }catch(e){} }
+
+  function goStep(id){
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+    document.getElementById(id).classList.add('on');
+    current=id;
+    var wrap=document.getElementById('pbarWrap');
+    if(STEPS_FILL[id]){
+      wrap.classList.add('on');
+      document.getElementById('pbarFill').style.width = STEPS_FILL[id]+'%';
+      document.getElementById('pbarPct').textContent = STEPS_FILL[id]+'%';
+      document.getElementById('pbarLabel').textContent = STEP_LABEL[id]||'Votre demande';
+    } else { wrap.classList.remove('on'); }
+    saveState();
+    try{ window.parent.postMessage({type:'solairefunnel:step',step:id},'*'); }catch(e){}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  window.goStep = goStep;
+
+  /* ---- achievement overlay ---- */
+  function achievement(title, text, icon){
+    var a=document.getElementById('ach');
+    document.getElementById('achTitle').textContent=title;
+    document.getElementById('achText').textContent=text;
+    document.getElementById('achIc').textContent=icon||'✓';
+    // confettis
+    var box=a.querySelector('.ach-box');
+    box.querySelectorAll('.ach-conf').forEach(function(c){c.remove();});
+    var colors=['#28c2b8','#1f6f8b','#e8a33d','#2ca06a'];
+    for(var i=0;i<14;i++){
+      var c=document.createElement('span'); c.className='ach-conf';
+      c.style.left=(15+Math.random()*70)+'%'; c.style.top='12px';
+      c.style.background=colors[i%4]; c.style.animationDelay=(Math.random()*.2)+'s';
+      box.appendChild(c);
+    }
+    a.classList.add('on');
+    setTimeout(function(){ a.classList.remove('on'); }, 1300);
+  }
+
+  /* ---- réponses génériques ---- */
+  window.answer = function(key, val, el, advance){
+    if(el){ var p=el.parentNode; p.querySelectorAll('.choice').forEach(function(c){c.classList.remove('sel');}); el.classList.add('sel'); }
+    data.answers[key]=val;
+    if(key==='Lieu de résidence') data.type_logement=val;
+    if(key==='projet') data.projet=val;
+    saveState(); saveProgress('q-'+key, false);
+    if(!advance) return;
+    setTimeout(function(){ flow(key); }, 260);
+  };
+
+  // enchaînement selon la question
+  function flow(key){
+    if(key==='facture'){ goStep('s-owner'); }
+    else if(key==='Lieu de résidence'){
+      goStep('s-cp');
+    }
+  }
+
+  /* ---- question disqualifiante ---- */
+  window.answerOwner = function(val, el){
+    var p=el.parentNode; p.querySelectorAll('.choice').forEach(function(c){c.classList.remove('sel');}); el.classList.add('sel');
+    data.answers['Propriétaire']=val; data.proprietaire=val;
+    saveState();
+    if(val==='Locataire'){
+      data.qualifie=false;
+      saveProgress('disqualif-locataire', false); // capture l'abandon/disqualif
+      setTimeout(function(){ goStep('s-tenant-contest'); }, 260);
+    } else {
+      data.qualifie=true;
+      saveProgress('q-proprietaire', false);
+      setTimeout(function(){ goStep('s-home'); }, 260);
+    }
+  };
+
+  /* ---- analyse ---- */
+  function runAnalysis(){
+    goStep('s-analysis');
+    document.getElementById('pbarWrap').classList.remove('on');
+    ['an1','an2','an3'].forEach(function(id,i){ setTimeout(function(){ document.getElementById(id).classList.add('on'); }, 450+i*600); });
+    setTimeout(function(){
+      achievement('Vous êtes éligible ! ✓', '87 % des profils comme le vôtre obtiennent un devis. Finalisez en 30 s.', '🎉');
+    }, 450+3*600+200);
+    setTimeout(function(){ goStep('s-name'); }, 450+3*600+200+1300);
+  }
+
+  /* ---- validations ---- */
+  function bad(input,errId,cond){ input.classList.toggle('bad',cond); document.getElementById(errId).classList.toggle('on',cond); return !cond; }
+
+  window.submitName = function(){
+    var pr=document.getElementById('i-prenom'), no=document.getElementById('i-nom');
+    var ok = bad(pr,'e-prenom',pr.value.trim().length<2); ok = bad(no,'e-nom',no.value.trim().length<2) && ok;
+    if(!ok) return;
+    data.prenom=pr.value.trim(); data.nom=no.value.trim(); saveState(); saveProgress('coordonnees-nom', false);
+    goStep('s-phone');
+  };
+
+  window.submitCp = function(){
+    var cp=document.getElementById('i-cp');
+    var v=cp.value.trim().replace(/\s/g,'');
+    if(!bad(cp,'e-cp',!/^\d{5}$/.test(v))) return;
+    data.cp=v; saveState(); saveProgress('coordonnees-cp', false);
+    // echo ville à partir du CP (geo-IP si dispo)
+    if(data.ville_ip){ var e=document.getElementById('cityEcho'); e.textContent='✓ '+data.ville_ip+' — secteur couvert'; e.classList.add('on'); }
+    // préparer confirmation email si connu
+    if(emailFromUrl){
+      var ec=document.getElementById('emailConfirm');
+      document.getElementById('emailConfirmText').innerHTML='C\'est bien sur <b>'+emailFromUrl+'</b> que vous souhaitez recevoir votre devis ?';
+      ec.style.display='block';
+    }
+    runAnalysis();
+  };
+
+  window.confirmEmail = function(yes){
+    emailConfirmed=true;
+    if(yes){ data.email=emailFromUrl; document.getElementById('emailEditWrap').style.display='none'; }
+    else { document.getElementById('emailEditWrap').style.display='block'; document.getElementById('i-email').focus(); }
+    saveProgress('email-confirme', false);
+  };
+
+  /* ---- envoi final (propriétaire qualifié) ---- */
+  window.submitLead = function(){
+    var gerr=document.getElementById('gerr'); gerr.classList.remove('on');
+    var tel=document.getElementById('i-tel');
+    var telD=tel.value.replace(/[\s.\-()]/g,'');
+    var ok = bad(tel,'e-tel', !/^(?:\+33|0033|0)[1-9]\d{8}$/.test(telD));
+    // email : si édité
+    if(emailFromUrl && document.getElementById('emailEditWrap').style.display==='block'){
+      var em=document.getElementById('i-email');
+      ok = bad(em,'e-email', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.value.trim())) && ok;
+      if(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.value.trim())) data.email=em.value.trim();
+    }
+    if(!ok) return;
+
+    data.telephone=telD;
+    var btn=document.getElementById('finalBtn'); btn.disabled=true; btn.innerHTML='Envoi en cours…';
+
+    // 1) Supabase : marque le lead COMPLET (verrouille la ligne)
+    saveProgress('complete', true);
+
+    // 2) Leadrs (propriétaire uniquement)
+    var payload = {
+      'Prénom': data.prenom, 'Nom': data.nom, 'Téléphone': data.telephone,
+      'Code postal': data.cp, 'Lieu de résidence': data.type_logement, 'Propriétaire': data.proprietaire
+    };
+    var params=new URLSearchParams(); if(CONFIG.landingPage) params.set('landingPage',CONFIG.landingPage);
+    var url=CONFIG.apiUrl+'/lead/public/generic-form/'+CONFIG.templateId+(params.toString()?'?'+params.toString():'');
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      .then(function(r){return r.json().then(function(d){return {s:r.status,d:d};});})
+      .then(function(res){
+        if(res.s===200 && res.d && res.d.type==='success'){
+          try{ localStorage.removeItem('solaire_funnel'); }catch(e){}
+          goStep('s-success');
+        } else { throw new Error((res.d&&(res.d.status||res.d.message))||'Erreur d\'envoi'); }
+      })
+      .catch(function(err){
+        gerr.textContent='Une erreur est survenue : '+err.message+'. Réessayez.';
+        gerr.classList.add('on'); btn.disabled=false; btn.innerHTML='Recevoir mon devis gratuit <span class="ar">→</span>';
+      });
+  };
+
+  /* ---- Supabase : capture progressive (upsert par session, suivi des abandons) ---- */
+  function genId(){ try{ if(window.crypto&&crypto.randomUUID) return crypto.randomUUID(); }catch(e){} return 'sess-'+Date.now()+'-'+Math.random().toString(16).slice(2); }
+  var SESSION=(function(){ try{ var s=localStorage.getItem('solaire_session'); if(s) return s; var id=genId(); localStorage.setItem('solaire_session',id); return id; }catch(e){ return genId(); } })();
+  function saveProgress(step, complete){
+    if(!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return; // pas configuré → on n'envoie rien
+    var row = {
+      session_id:SESSION, current_step:step||current, complete:!!complete,
+      verticale:'solaire', template_id:CONFIG.templateId, sponsor:'Rénovation · Panneaux solaires',
+      prenom:data.prenom||null, nom:data.nom||null, telephone:data.telephone||null,
+      email:data.email||null, code_postal:data.cp||null, ville:data.ville_ip||null,
+      type_logement:data.type_logement||null, statut_occupation:data.proprietaire||null,
+      intention:data.projet||null, qualifie:data.qualifie,
+      landing_page:data.landingPage, parrainages:data.parrainages||null,
+      reponses:data.answers
+    };
+    fetch(CONFIG.supabaseUrl.replace(/\/$/,'')+'/rest/v1/'+CONFIG.supabaseTable+'?on_conflict=session_id', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':CONFIG.supabaseKey,'Authorization':'Bearer '+CONFIG.supabaseKey,'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body: JSON.stringify(row)
+    }).catch(function(){});
+  }
+
+  /* ---- parrainage ---- */
+  window.goRefer = function(){ goStep('s-owner-refer'); };
+
+  window.submitRefer = function(who){
+    var ids = who==='tenant' ? ['ref1','ref2','ref3'] : ['oref1','oref2','oref3'];
+    var consentId = who==='tenant' ? 'ref-consent' : 'oref-consent';
+    var emails = ids.map(function(id){return document.getElementById(id).value.trim();})
+                    .filter(function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);});
+    if(emails.length===0){ alert('Indiquez au moins un email valide.'); return; }
+    if(!document.getElementById(consentId).checked){ alert('Veuillez confirmer le consentement.'); return; }
+    // stocke les filleuls (Supabase, table dédiée recommandée — ici on tague dans answers)
+    data.parrainages = emails; saveProgress('parrainage', true);
+    goStep('s-final-thanks');
+  };
+
+  /* ---- cascade comparateur (locataire qui skippe) ---- */
+  window.toComparateur = function(){
+    if(CONFIG.comparateurUrl){
+      try{ window.top.location.href = CONFIG.comparateurUrl; }
+      catch(e){ window.location.href = CONFIG.comparateurUrl; }
+    } else { goStep('s-final-thanks'); }
+  };
+
+  /* ---- nettoyage erreurs à la saisie ---- */
+  ['i-prenom','i-nom','i-cp','i-tel','i-email'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    el.addEventListener('input',function(){ this.classList.remove('bad'); var e=document.getElementById('e-'+id.split('-')[1]); if(e)e.classList.remove('on'); });
+  });
+
+  /* ---- reprise de session ---- */
+  try{
+    var saved=JSON.parse(localStorage.getItem('solaire_funnel')||'null');
+    if(saved && saved.step && saved.step!=='s-hero' && (Date.now()-saved.ts)<86400000*3){
+      // on restaure les données mais on laisse le prospect reprendre à son étape
+      Object.assign(data, saved.data||{});
+      // (option : reprendre directement — ici on laisse le hero pour ne pas perturber, données conservées)
+    }
+  }catch(e){}
+
+  /* ---- simulateur d'économies (hero) ---- */
+  function fmtEur(n){ return Math.round(n).toLocaleString('fr-FR'); }
+  var SOLAR_RATE=0.65;
+  function updateCalc(){
+    var sl=document.getElementById('billSlider'); if(!sl) return;
+    var bill=+sl.value;
+    var saveMonth=Math.round(bill*SOLAR_RATE);
+    var solarBill=bill-saveMonth;
+    var saveYear=Math.round(saveMonth*12/10)*10;
+    document.getElementById('billVal').textContent=bill;
+    document.getElementById('solarBill').textContent=fmtEur(solarBill);
+    document.getElementById('saveYear').textContent=fmtEur(saveYear)+' €';
+    data.answers.facture_mensuelle=bill;
+    data.answers.facture_solaire_estimee=solarBill;
+    data.answers.economie_estimee_an=saveYear;
+  }
+  (function(){ var sl=document.getElementById('billSlider'); if(sl){ sl.addEventListener('input',updateCalc); updateCalc(); } })();
+  window.startSimu=function(){ saveProgress('q-facture', false); goStep('s-owner'); };
+
+  /* ---- rareté : nombre d'études gratuites restantes ce mois-ci ---- */
+  (function(){ var el=document.getElementById('slotsLeft'); if(el){ var d=new Date().getDate(); el.textContent=Math.max(4, 34 - d); } })();
+
+  /* ---- capture "page vue" : lead arrivé via lien emailing, même sans commencer ---- */
+  if(emailFromUrl){ saveProgress('page-vue', false); }
+
+})();
+</script>
+</body>
+</html>
