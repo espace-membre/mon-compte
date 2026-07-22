@@ -431,7 +431,7 @@
   var CONFIG = {
     // Leadrs (déjà bon)
     apiUrl:      'https://api-leadrs-co.osc-fr1.scalingo.io',
-    templateId:  qs.get('templateId')  || '6a3aa645a97f30001d2e2ed8',
+    templateId:  qs.get('templateId')  || '69d4b8dd9ff811001eb51931',
     landingPage: qs.get('landingPage') || 'mon-site.fr',
 
     // Supabase (TON stockage de leads)
@@ -656,16 +656,16 @@
   function saveProgress(step, complete){
     if(!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return; // pas configuré → on n'envoie rien
     var row = {
-      session_id:SESSION, current_step:step||current, complete:!!complete,
-      verticale:'solaire', template_id:CONFIG.templateId, sponsor:'Rénovation · Panneaux solaires',
-      prenom:data.prenom||null, nom:data.nom||null, telephone:data.telephone||null,
-      email:data.email||null, code_postal:data.cp||null, ville:data.ville_ip||null,
-      type_logement:data.type_logement||null, statut_occupation:data.proprietaire||null,
-      intention:data.projet||null, qualifie:data.qualifie,
-      landing_page:data.landingPage, parrainages:data.parrainages||null,
-      reponses:data.answers
+      ms_session_id:SESSION, ms_current_step:step||current, ms_complete:!!complete,
+      ms_verticale:'solaire', ms_template_id:CONFIG.templateId, ms_sponsor:'Rénovation · Panneaux solaires',
+      ms_intention:data.projet||null, ms_qualifie:data.qualifie,
+      ms_landing_page:data.landingPage, ms_parrainages:data.parrainages||null,
+      ms_type_logement:(data.answers['type_logement']||data.answers['Lieu de résidence']||null),
+      ms_statut_occupation:(data.answers['statut_occupation']||data.answers['Situation']||data.answers['Propriétaire']||null),
+      ms_possede_voiture:(typeof data.answers['possede_voiture']!=='undefined'?data.answers['possede_voiture']:null),
+      ms_reponses:Object.assign({prenom:data.prenom||null,nom:data.nom||null,email:data.email||null,telephone:data.telephone||null,code_postal:data.cp||null,ville:data.ville_ip||null},data.answers)
     };
-    fetch(CONFIG.supabaseUrl.replace(/\/$/,'')+'/rest/v1/'+CONFIG.supabaseTable+'?on_conflict=session_id', {
+    fetch(CONFIG.supabaseUrl.replace(/\/$/,'')+'/rest/v1/'+CONFIG.supabaseTable+'?on_conflict=ms_session_id', {
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':CONFIG.supabaseKey,'Authorization':'Bearer '+CONFIG.supabaseKey,'Prefer':'resolution=merge-duplicates,return=minimal'},
       body: JSON.stringify(row)
