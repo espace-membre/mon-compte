@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rachat de crédit — Réduisez vos mensualités</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16294d;
+    --navy-2:#1f3a66;
+    --blue:#2f5fa6;
+    --gold:#c6982f;
+    --gold-soft:#f6eccd;
+    --green:#0f8a5f;
+    --green-soft:#e7f5ef;
+    --ink:#1b2530;
+    --soft:#5e6b78;
+    --mute:#93a0ac;
+    --bg:#f3f6fb;
+    --card:#ffffff;
+    --line:#e4e9f1;
+    --line-2:#d3dbe6;
+    --danger:#b3402e;
+    --shadow:0 1px 2px rgba(22,41,77,.05),0 14px 34px rgba(22,41,77,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:transparent}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+  .serif{font-family:'Fraunces',Georgia,serif}
+  #app{max-width:580px;margin:0 auto;padding:16px}
+
+  /* brand bar */
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+  .brand .mark{width:36px;height:36px;border-radius:10px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:19px;flex-shrink:0}
+  .brand .bn{font-weight:600;font-size:15px;color:var(--navy);line-height:1.15}
+  .brand .bt{font-size:11.5px;color:var(--soft)}
+  .brand .rate{margin-left:auto;text-align:right;line-height:1.2}
+  .brand .stars{color:var(--gold);font-size:12px;letter-spacing:1px}
+  .brand .rn{font-size:11px;color:var(--soft)}
+
+  /* progress */
+  .pbar-wrap{display:none;margin-bottom:18px}
+  .pbar-wrap.on{display:block}
+  .pbar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+  .pbar-label{font-size:12.5px;font-weight:500;color:var(--navy)}
+  .pbar-pct{font-size:12.5px;font-weight:500;color:var(--mute)}
+  .pbar{height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+  .pbar-fill{height:100%;width:20%;border-radius:99px;background:var(--navy);transition:width .45s cubic-bezier(.4,0,.2,1)}
+
+  .panel{display:none;animation:fade .34s ease both}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px 30px 34px;box-shadow:var(--shadow)}
+  @media(max-width:520px){ .card{padding:26px 20px 28px} }
+
+  .eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  .who{font-size:16px;font-weight:600;color:var(--blue);line-height:1.4;margin-bottom:12px}
+  h1.q{font-size:30px;font-weight:600;line-height:1.16;letter-spacing:-.01em;color:var(--navy);margin-bottom:14px}
+  h2.q{font-size:25px;font-weight:600;line-height:1.22;letter-spacing:-.01em;color:var(--navy);margin-bottom:10px}
+  @media(max-width:520px){ h1.q{font-size:26px} h2.q{font-size:22px} }
+  .hl{background:var(--gold-soft);box-shadow:0 0 0 4px var(--gold-soft);border-radius:3px;white-space:nowrap}
+  .sub{font-size:15.5px;color:var(--soft);margin-bottom:24px;line-height:1.6}
+  .sub strong{color:var(--ink);font-weight:600}
+  .ask{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px}
+
+  /* choices */
+  .choices{display:flex;flex-direction:column;gap:11px}
+  .opt{display:flex;align-items:center;gap:15px;text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:14px;padding:16px 18px;cursor:pointer;width:100%;font-family:inherit;color:inherit;transition:border-color .15s,box-shadow .15s,transform .12s}
+  .opt:hover{border-color:var(--navy);box-shadow:0 8px 22px rgba(22,41,77,.09);transform:translateY(-1px)}
+  .opt.sel{border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,41,77,.1)}
+  .opt .ic{width:42px;height:42px;border-radius:11px;flex-shrink:0;background:#eef2f9;display:flex;align-items:center;justify-content:center;color:var(--navy)}
+  .opt .ic svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .opt .tx{flex:1}
+  .opt .tx b{display:block;font-size:15.5px;font-weight:600;color:var(--ink)}
+  .opt .tx small{font-size:12.5px;color:var(--soft)}
+  .opt .chev{color:var(--mute);flex-shrink:0}
+  .opt .chev svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  .assure{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--soft)}
+  .assure span{display:inline-flex;align-items:center;gap:6px}
+  .assure svg{width:14px;height:14px;stroke:var(--green);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  /* simulateur */
+  .sim-readout{text-align:center;margin:2px 0 4px}
+  .sim-readout .v{font-size:36px;font-weight:600;letter-spacing:-.02em;color:var(--navy);font-variant-numeric:tabular-nums}
+  .sim-readout .u{font-size:16px;color:var(--soft);font-weight:500}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:var(--line-2);outline:none;margin:18px 0 7px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--navy);box-shadow:0 2px 6px rgba(22,41,77,.25);cursor:pointer;transition:transform .1s}
+  input[type=range]::-webkit-slider-thumb:active{transform:scale(1.08)}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--navy);box-shadow:0 2px 6px rgba(22,41,77,.25);cursor:pointer}
+  .slider-scale{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-bottom:24px}
+  .sim-result{border:1px solid var(--green);border-radius:16px;padding:20px 20px 18px;background:var(--green-soft);text-align:center}
+  .sim-result .lbl{font-size:13px;color:#2a6a52;font-weight:500}
+  .sim-result .amt{font-family:'Fraunces',serif;font-size:38px;font-weight:600;color:var(--green);letter-spacing:-.01em;line-height:1.1;margin:5px 0;font-variant-numeric:tabular-nums}
+  .sim-result .amt .u{font-size:18px;font-weight:500}
+  .sim-result .save{font-size:13.5px;color:#3a5a4d}
+  .sim-result .save strong{color:#0c6d4b;font-weight:600}
+  .note{font-size:11.5px;color:var(--mute);line-height:1.55;margin-top:16px}
+
+  /* fields */
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .f{display:flex;flex-direction:column;gap:7px}
+  .f.full{grid-column:1/-1}
+  .f label{font-size:13px;font-weight:500;color:var(--ink)}
+  .f input{padding:14px 15px;border:1px solid var(--line-2);border-radius:12px;background:#fff;font-size:16px;font-family:inherit;color:var(--ink);transition:border-color .14s,box-shadow .14s;width:100%}
+  .f input::placeholder{color:#aab4be}
+  .f input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,41,77,.1)}
+  .f input.bad{border-color:var(--danger);box-shadow:0 0 0 3px rgba(179,64,46,.1)}
+  .err{font-size:12.5px;color:var(--danger);display:none}
+  .err.on{display:block}
+  .city-echo{font-size:13px;color:var(--green);font-weight:500;display:none}
+  .city-echo.on{display:block}
+  @media(max-width:520px){ .fields{grid-template-columns:1fr} }
+
+  .reason{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:var(--soft);line-height:1.55;margin-top:16px;padding:14px 16px;background:#f7f9fc;border:1px solid var(--line);border-radius:12px}
+  .reason svg{width:18px;height:18px;stroke:var(--navy);stroke-width:1.8;fill:none;flex-shrink:0;margin-top:1px}
+  .reason strong{color:var(--ink);font-weight:600}
+
+  .pushpull{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:var(--navy);line-height:1.55;margin-top:18px;padding:14px 16px;background:#eef2f9;border:1px solid #d8e1ef;border-radius:12px}
+  .pushpull svg{width:18px;height:18px;stroke:var(--navy);stroke-width:1.8;fill:none;flex-shrink:0;margin-top:1px}
+  .pushpull strong{font-weight:600}
+
+  /* buttons */
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:24px;padding:16px 24px;border:none;border-radius:13px;cursor:pointer;background:var(--navy);color:#fff;font-family:inherit;font-size:16px;font-weight:600;transition:background .16s,transform .12s}
+  .btn:hover{background:var(--navy-2);transform:translateY(-1px)}
+  .btn:disabled{opacity:.6;cursor:wait;transform:none}
+  .btn svg{width:17px;height:17px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .16s}
+  .btn:hover svg{transform:translateX(3px)}
+  .back{display:block;margin:18px auto 0;background:none;border:none;cursor:pointer;font-size:13.5px;color:var(--mute);font-family:inherit}
+  .back:hover{color:var(--soft)}
+
+  .consent-note{margin-top:16px;text-align:center;font-size:12px;color:var(--mute);line-height:1.55}
+  .secure{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:11px;font-size:12.5px;color:var(--soft)}
+  .secure svg{width:14px;height:14px;stroke:var(--green);stroke-width:2;fill:none}
+  .legal-credit{margin-top:15px;font-size:11px;color:var(--mute);line-height:1.6;text-align:center}
+  .gerr{display:none;margin-bottom:16px;padding:12px 15px;border-radius:11px;background:#fbeae6;border:1px solid #e6bcb0;color:#9a3a2a;font-size:13.5px}
+  .gerr.on{display:block}
+
+  /* analyse */
+  .analysis h2{margin-bottom:8px}
+  .analysis .asub{font-size:14px;color:var(--soft);margin-bottom:22px}
+  .astep{display:flex;align-items:center;gap:13px;padding:13px 0;font-size:14.5px;color:var(--mute);border-bottom:1px solid var(--line);transition:color .3s}
+  .astep:last-child{border-bottom:none}
+  .astep .t{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--line-2);display:flex;align-items:center;justify-content:center;transition:all .3s}
+  .astep .t svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
+  .astep.on{color:var(--ink);font-weight:500}
+  .astep.on .t{background:var(--green);border-color:var(--green)}
+  .astep.on .t svg{opacity:1}
+
+  /* boucle concours (locataire / sans crédit) */
+  .contest-ic{width:56px;height:56px;border-radius:14px;margin:0 auto 18px;background:var(--gold-soft);color:#9a751c;display:flex;align-items:center;justify-content:center}
+  .contest-ic svg{width:28px;height:28px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .gift-banner{border:1px solid var(--line-2);border-radius:14px;padding:16px 18px;background:#fbfaf5;text-align:center;margin-bottom:18px}
+  .gift-banner b{display:block;font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--navy)}
+  .gift-banner small{display:block;font-size:12px;color:var(--soft);margin-top:3px}
+  .refs{display:flex;flex-direction:column;gap:10px}
+  .refs input{padding:13px 15px;border:1px solid var(--line-2);border-radius:12px;background:#fff;font-size:15.5px;font-family:inherit;color:var(--ink);transition:border-color .14s,box-shadow .14s}
+  .refs input::placeholder{color:#aab4be}
+  .refs input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,41,77,.1)}
+  .consent{display:flex;gap:11px;align-items:flex-start;margin-top:16px;font-size:12.5px;color:var(--soft);line-height:1.5;cursor:pointer}
+  .consent input{margin-top:2px;width:16px;height:16px;accent-color:var(--navy);flex-shrink:0;cursor:pointer}
+  .skip{display:block;margin:16px auto 0;background:none;border:none;cursor:pointer;font-size:13.5px;color:var(--blue);font-family:inherit;text-decoration:underline}
+  .skip:hover{color:var(--navy)}
+
+  /* succès */
+  .success{text-align:center;padding:14px 6px}
+  .success .ic{width:60px;height:60px;border-radius:50%;margin:0 auto 20px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center}
+  .success .ic svg{width:30px;height:30px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .success h2{font-size:25px;font-weight:600;color:var(--navy);margin-bottom:13px;letter-spacing:-.01em}
+  .success p{font-size:14.5px;color:var(--soft);max-width:430px;margin:0 auto;line-height:1.65}
+  .sbadge{display:inline-block;margin-top:20px;padding:9px 18px;border-radius:99px;border:1px solid var(--line-2);color:var(--soft);font-size:13px;font-weight:500}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="brand">
+    <div class="mark serif">€</div>
+    <div>
+      <div class="bn">Simulateur gratuit</div>
+      <div class="bt">Courtier en regroupement de crédits</div>
+    </div>
+    <div class="rate">
+      <div class="stars">★★★★★</div>
+      <div class="rn">4,8/5 · clients accompagnés</div>
+    </div>
+  </div>
+
+  <div class="pbar-wrap" id="pbarWrap">
+    <div class="pbar-top">
+      <span class="pbar-label" id="pbarLabel">Votre demande</span>
+      <span class="pbar-pct" id="pbarPct">20%</span>
+    </div>
+    <div class="pbar"><div class="pbar-fill" id="pbarFill"></div></div>
+  </div>
+
+  <!-- STEP 0 : intro + situation -->
+  <section class="panel on" id="s-intro">
+    <div class="card">
+      <p class="who">Vous remboursez un crédit immobilier, des travaux ou un crédit conso&nbsp;?</p>
+      <h1 class="q serif">Découvrez comment alléger vos mensualités de <span class="hl">15 à 30&nbsp;%</span></h1>
+      <p class="sub">Faites la simulation <strong>sans engagement</strong> : un conseiller réalise ensuite votre étude personnalisée, gratuitement.</p>
+      <p class="ask">Pour commencer, quelle est votre situation&nbsp;?</p>
+      <div class="choices">
+        <button class="opt" onclick="answer('Situation','Propriétaire (résidence principale)',this,true)">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+          <span class="tx"><b>Propriétaire de ma résidence principale</b><small>J'occupe le logement que je possède</small></span>
+          <span class="chev"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
+        <button class="opt" onclick="answer('Situation','Propriétaire (bien locatif)',this,true)">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 21V4h10v17"/><path d="M14 9h6v12"/><path d="M8 8h2M8 12h2M8 16h2"/></svg></span>
+          <span class="tx"><b>Propriétaire d'un bien locatif</b><small>J'ai un investissement locatif</small></span>
+          <span class="chev"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
+        <button class="opt" onclick="answer('Situation','Locataire ou sans crédit',this,true)">
+          <span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="4"/><path d="M11 11l8 8M16 16l2-2M19 19l2-2"/></svg></span>
+          <span class="tx"><b>Locataire ou sans crédit</b><small>Je loue mon logement, ou je n'ai pas de crédit en cours</small></span>
+          <span class="chev"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
+      </div>
+      <div class="assure">
+        <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> Gratuit, sans engagement</span>
+        <span><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Données confidentielles</span>
+        <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> Sans impact sur vos crédits</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1 : simulateur -->
+  <section class="panel" id="s-simu">
+    <div class="card">
+      <span class="eyebrow">Simulateur</span>
+      <h2 class="q serif">Quel est le total de vos mensualités&nbsp;?</h2>
+      <p class="sub">Additionnez ce que vous remboursez chaque mois, tous crédits confondus.</p>
+
+      <div class="sim-readout"><span class="v" id="mensVal">900</span><span class="u">&nbsp;€/mois</span></div>
+      <input type="range" id="mensSlider" min="200" max="3000" step="50" value="900" aria-label="Mensualités actuelles">
+      <div class="slider-scale"><span>200&nbsp;€</span><span>3&nbsp;000&nbsp;€</span></div>
+
+      <div class="sim-result">
+        <div class="lbl">Après regroupement, votre mensualité pourrait être de</div>
+        <div class="amt"><span id="newMens">675</span><span class="u">&nbsp;€/mois</span></div>
+        <div class="save">soit environ <strong id="saveMonth">225&nbsp;€</strong> de moins chaque mois<sup>*</sup></div>
+      </div>
+
+      <button class="btn" onclick="startSimu()">Continuer <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <p class="note"><sup>*</sup> Estimation indicative et non contractuelle (réduction de 25&nbsp;% appliquée à titre d'exemple ; allègement moyen constaté de 15 à 30&nbsp;%). Un regroupement de crédits allonge généralement la durée de remboursement et augmente le coût total du crédit. Le montant réel dépend de votre situation et d'une étude personnalisée.</p>
+      <button class="back" onclick="goStep('s-intro')">Retour</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 : code postal -->
+  <section class="panel" id="s-cp">
+    <div class="card">
+      <span class="eyebrow">Localisation</span>
+      <h2 class="q serif">Où se situe votre logement&nbsp;?</h2>
+      <p class="sub">Pour vous orienter vers un conseiller en regroupement de crédits de votre secteur.</p>
+      <div class="fields">
+        <div class="f full"><label>Code postal</label><input id="i-cp" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="Ex : 69003"><span class="err" id="e-cp">Code postal invalide (5 chiffres)</span><span class="city-echo" id="cityEcho"></span></div>
+      </div>
+      <div class="reason"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Votre code postal nous permet de vous mettre en relation avec un <strong>conseiller en financement de votre région</strong>.</span></div>
+      <button class="btn" onclick="submitCp()">Continuer <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="back" onclick="goStep('s-simu')">Retour</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 : analyse -->
+  <section class="panel" id="s-analysis">
+    <div class="card analysis">
+      <h2 class="q serif">Analyse de votre situation</h2>
+      <p class="asub">Nous étudions les solutions adaptées à votre profil…</p>
+      <div class="astep" id="an1"><span class="t"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span> Vérification de votre profil</div>
+      <div class="astep" id="an2"><span class="t"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span> Étude des solutions de regroupement</div>
+      <div class="astep" id="an3"><span class="t"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span> Mise en relation avec un conseiller de votre région</div>
+    </div>
+  </section>
+
+  <!-- STEP 4 : identité -->
+  <section class="panel" id="s-name">
+    <div class="card">
+      <span class="eyebrow">Vos coordonnées</span>
+      <h2 class="q serif">Recevez votre étude personnalisée</h2>
+      <p class="sub">Gratuite et sans engagement — avec votre nouvelle mensualité estimée et la solution adaptée à votre budget. À quel nom l'établir&nbsp;?</p>
+      <div class="fields">
+        <div class="f"><label>Prénom</label><input id="i-prenom" type="text" autocomplete="given-name" placeholder="Votre prénom"><span class="err" id="e-prenom">Indiquez votre prénom</span></div>
+        <div class="f"><label>Nom</label><input id="i-nom" type="text" autocomplete="family-name" placeholder="Votre nom"><span class="err" id="e-nom">Indiquez votre nom</span></div>
+      </div>
+      <button class="btn" onclick="submitName()">Continuer <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="back" onclick="goStep('s-cp')">Retour</button>
+    </div>
+  </section>
+
+  <!-- STEP 5 : téléphone + email -->
+  <section class="panel" id="s-phone">
+    <div class="card">
+      <span class="eyebrow">Dernière étape</span>
+      <h2 class="q serif">Comment vous présenter votre solution&nbsp;?</h2>
+      <p class="sub">Un conseiller étudie votre situation, puis vous recontacte pour vous présenter votre nouvelle mensualité estimée et la solution adaptée à votre budget.</p>
+      <div class="gerr" id="gerr"></div>
+      <div class="fields">
+        <div class="f full"><label>Téléphone</label><input id="i-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78"><span class="err" id="e-tel">Numéro de téléphone invalide</span></div>
+        <div class="f full"><label>Email</label><input id="i-email" type="email" autocomplete="email" placeholder="vous@exemple.fr"><span class="err" id="e-email">Email invalide</span></div>
+      </div>
+      <div class="pushpull"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg><span>Votre dossier n'est pas éligible&nbsp;? Vous en êtes informé par email, <strong>sans aucun appel</strong>.</span></div>
+      <button class="btn" id="finalBtn" onclick="submitLead()">Recevoir mon étude gratuite <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <p class="consent-note">En soumettant ce formulaire, vous acceptez d'être contacté par nos partenaires.</p>
+      <p class="secure"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Gratuit · sans engagement · vos données sont protégées</p>
+      <p class="legal-credit">Un crédit vous engage et doit être remboursé. Vérifiez vos capacités de remboursement avant de vous engager. Sous réserve d'étude et d'acceptation par un établissement prêteur.</p>
+      <button class="back" onclick="goStep('s-name')">Retour</button>
+    </div>
+  </section>
+
+  <!-- LOCATAIRE / SANS CRÉDIT : boucle concours -->
+  <section class="panel" id="s-tenant-contest">
+    <div class="card">
+      <div class="contest-ic"><svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7S11 3 8.5 3 5 5 6 6s6 1 6 1zM12 7s1-4 3.5-4S19 5 18 6s-6 1-6 1z"/></svg></div>
+      <h2 class="q serif">Le rachat de crédit n'est pas pour vous… mais repartez gagnant&nbsp;!</h2>
+      <p class="sub">Le regroupement concerne les personnes ayant des crédits en cours. En attendant, tentez de gagner <strong id="giftInline">une carte cadeau</strong> et trouvez une offre d'énergie moins chère.</p>
+      <div class="gift-banner"><b id="giftLine">Tentez de gagner une carte cadeau</b><small>Tirage au sort — voir conditions</small></div>
+      <p class="ask">Parrainez des proches qui remboursent un crédit</p>
+      <p class="sub" style="margin-bottom:16px">Chaque proche qui pourrait être intéressé par un rachat de crédit&nbsp;= une chance de plus au tirage.</p>
+      <div class="refs">
+        <input id="ref1" type="email" placeholder="Email d'un proche">
+        <input id="ref2" type="email" placeholder="Email d'un 2ᵉ proche (optionnel)">
+        <input id="ref3" type="email" placeholder="Email d'un 3ᵉ proche (optionnel)">
+      </div>
+      <label class="consent"><input type="checkbox" id="ref-consent"><span>Je confirme que ces personnes acceptent de recevoir une invitation ponctuelle, et j'accepte le règlement du jeu concours.</span></label>
+      <button class="btn" id="referBtn" onclick="submitRefer()">Valider ma participation</button>
+      <button class="skip" onclick="toComparateur()">Non merci, comparer les offres d'énergie →</button>
+    </div>
+  </section>
+
+  <!-- Remerciement concours -->
+  <section class="panel" id="s-final-thanks">
+    <div class="card success">
+      <div class="ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+      <h2 class="serif">Participation enregistrée</h2>
+      <p>Merci ! Votre participation au tirage au sort est bien prise en compte. Bonne chance.</p>
+    </div>
+  </section>
+
+  <!-- STEP 6 : succès -->
+  <section class="panel" id="s-success">
+    <div class="card success">
+      <div class="ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+      <h2 class="serif">Votre demande est enregistrée</h2>
+      <p>Votre dossier a bien été transmis. Un conseiller en financement étudie votre situation, puis revient vers vous pour vous présenter votre solution de regroupement personnalisée.</p>
+      <div class="sbadge">Dossier reçu · étude en cours</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var qs = new URLSearchParams(location.search);
+  var CONFIG = {
+    apiUrl:      'https://api-leadrs-co.osc-fr1.scalingo.io',
+    templateId:  qs.get('templateId')  || '6a6740ca7fdc9f001c961d8d',
+    landingPage: qs.get('landingPage') || 'rachat-credit',
+    supabaseUrl:   'https://itdrjutfpasextjahjmj.supabase.co',
+    supabaseKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0ZHJqdXRmcGFzZXh0amFoam1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjQ2MzIsImV4cCI6MjA5NzgwMDYzMn0.So4UgZpdSuoISxzBQjnTMYwRn9AWwhYovPSmeeFgfiI',
+    supabaseTable: 'submissions',
+    comparateurUrl: 'https://YP3O4VbA0RGJzg7-c.vokar.co?o=3324&a=2104&k=9153&s=187723&d=3788&affclickid=&email=&firstName=&lastName=&phoneNumberMobile=&address=', // comparateur énergie affilié (locataire / sans crédit qui skippe)
+    giftName: 'une carte cadeau Amazon de 100 €',
+    geoip: true,
+    geoipEndpoint: 'https://ipwho.is/',
+    emailParam: 'e'
+  };
+
+  var data = { source:'funnel-rachat-credit', landingPage:CONFIG.landingPage, qualifie:true, answers:{ variante:'simulateur' } };
+  var emailFromUrl = '';
+
+  (function(){
+    var raw = qs.get('u') || qs.get(CONFIG.emailParam) || qs.get('email') || '';
+    if(raw){
+      try { var dec = atob(decodeURIComponent(raw)); if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dec)) raw = dec; } catch(e){}
+      if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)){ emailFromUrl = raw; data.email = raw; }
+    }
+  })();
+
+  if(CONFIG.geoip){
+    fetch(CONFIG.geoipEndpoint).then(function(r){return r.json();}).then(function(g){
+      if(!g || !g.city) return;
+      var conn = (g.connection && (g.connection.org||g.connection.isp)||'')+'';
+      if(/mobile|telecom mobile|sfr mobile|orange.*mobile|free mobile|bouygues telecom/i.test(conn)) return;
+      data.ville_ip = g.city;
+    }).catch(function(){});
+  }
+
+  var STEPS_FILL = { 's-simu':30, 's-cp':50, 's-name':75, 's-phone':92, 's-success':100 };
+  var STEP_LABEL = { 's-simu':'Votre simulation', 's-cp':'Localisation', 's-name':'Vos coordonnées', 's-phone':'Dernière étape', 's-success':'Terminé' };
+  var current='s-intro';
+
+  function saveState(){ try{ localStorage.setItem('rc_funnel', JSON.stringify({step:current,data:data,ts:Date.now()})); }catch(e){} }
+
+  function goStep(id){
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+    var t=document.getElementById(id); if(t) t.classList.add('on');
+    current=id;
+    var wrap=document.getElementById('pbarWrap');
+    if(STEPS_FILL[id]){
+      wrap.classList.add('on');
+      document.getElementById('pbarFill').style.width = STEPS_FILL[id]+'%';
+      document.getElementById('pbarPct').textContent = STEPS_FILL[id]+'%';
+      document.getElementById('pbarLabel').textContent = STEP_LABEL[id]||'Votre demande';
+    } else { wrap.classList.remove('on'); }
+    saveState();
+    try{ window.parent.postMessage({type:'rcfunnel:step',step:id},'*'); }catch(e){}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  window.goStep = goStep;
+
+  window.answer = function(key, val, el, advance){
+    if(el){ var p=el.parentNode; p.querySelectorAll('.opt').forEach(function(c){c.classList.remove('sel');}); el.classList.add('sel'); }
+    data.answers[key]=val;
+    if(key==='Situation') data.statut = val;
+    saveState();
+    if(key==='Situation'){
+      var disq = /sans crédit|locataire/i.test(val);
+      data.qualifie = !disq;
+      saveProgress(disq?'disqualif-locataire':'q-Situation', false);
+      if(!advance) return;
+      setTimeout(function(){ goStep(disq ? 's-tenant-contest' : 's-simu'); }, 230);
+      return;
+    }
+    saveProgress('q-'+key, false);
+    if(!advance) return;
+  };
+
+  function runAnalysis(){
+    goStep('s-analysis');
+    document.getElementById('pbarWrap').classList.remove('on');
+    ['an1','an2','an3'].forEach(function(id,i){ setTimeout(function(){ document.getElementById(id).classList.add('on'); }, 500+i*650); });
+    setTimeout(function(){ goStep('s-name'); }, 500+3*650+450);
+  }
+
+  function bad(input,errId,cond){ input.classList.toggle('bad',cond); document.getElementById(errId).classList.toggle('on',cond); return !cond; }
+
+  window.submitName = function(){
+    var pr=document.getElementById('i-prenom'), no=document.getElementById('i-nom');
+    var ok = bad(pr,'e-prenom',pr.value.trim().length<2); ok = bad(no,'e-nom',no.value.trim().length<2) && ok;
+    if(!ok) return;
+    data.prenom=pr.value.trim(); data.nom=no.value.trim(); saveState(); saveProgress('coordonnees-nom', false);
+    goStep('s-phone');
+  };
+
+  window.submitCp = function(){
+    var cp=document.getElementById('i-cp');
+    var v=cp.value.trim().replace(/\s/g,'');
+    if(!bad(cp,'e-cp',!/^\d{5}$/.test(v))) return;
+    data.cp=v; saveState(); saveProgress('coordonnees-cp', false);
+    if(data.ville_ip){ var e=document.getElementById('cityEcho'); e.textContent='✓ '+data.ville_ip+' — secteur couvert'; e.classList.add('on'); }
+    runAnalysis();
+  };
+
+  window.submitLead = function(){
+    var gerr=document.getElementById('gerr'); gerr.classList.remove('on');
+    var tel=document.getElementById('i-tel');
+    var telD=tel.value.replace(/[\s.\-()]/g,'');
+    var ok = bad(tel,'e-tel', !/^(?:\+33|0033|0)[1-9]\d{8}$/.test(telD));
+    var em=document.getElementById('i-email');
+    var emV=em.value.trim();
+    ok = bad(em,'e-email', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emV)) && ok;
+    if(!ok) return;
+    data.email=emV; data.telephone=telD;
+    var btn=document.getElementById('finalBtn'); btn.disabled=true; btn.textContent='Envoi en cours…';
+
+    saveProgress('complete', true);
+
+    var payload = {
+      'Prénom': data.prenom, 'Nom': data.nom, 'Téléphone': data.telephone,
+      'Email': data.email, 'Code postal': data.cp
+    };
+    var params=new URLSearchParams(); if(CONFIG.landingPage) params.set('landingPage',CONFIG.landingPage);
+    var url=CONFIG.apiUrl+'/lead/public/generic-form/'+CONFIG.templateId+(params.toString()?'?'+params.toString():'');
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      .then(function(r){return r.json().then(function(d){return {s:r.status,d:d};});})
+      .then(function(res){
+        if(res.s===200 && res.d && res.d.type==='success'){
+          try{ localStorage.removeItem('rc_funnel'); }catch(e){}
+          goStep('s-success');
+        } else { throw new Error((res.d&&(res.d.status||res.d.message))||'Erreur d\'envoi'); }
+      })
+      .catch(function(err){
+        gerr.textContent='Une erreur est survenue : '+err.message+'. Réessayez.';
+        gerr.classList.add('on'); btn.disabled=false; btn.innerHTML='Recevoir mon étude gratuite <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      });
+  };
+
+  function genId(){ try{ if(window.crypto&&crypto.randomUUID) return crypto.randomUUID(); }catch(e){} return 'sess-'+Date.now()+'-'+Math.random().toString(16).slice(2); }
+  var SESSION=(function(){ try{ var s=localStorage.getItem('rc_session'); if(s) return s; var id=genId(); localStorage.setItem('rc_session',id); return id; }catch(e){ return genId(); } })();
+  function saveProgress(step, complete){
+    if(!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return;
+    var row = {
+      ms_session_id:SESSION, ms_current_step:step||current, ms_complete:!!complete,
+      ms_verticale:'rachat-credit', ms_template_id:CONFIG.templateId, ms_sponsor:'Investissement \u00b7 Rachat de cr\u00e9dit',
+      ms_intention:null, ms_qualifie:data.qualifie,
+      ms_landing_page:data.landingPage, ms_parrainages:data.parrainages||null,
+      ms_type_logement:(data.answers['type_logement']||data.answers['Lieu de résidence']||null),
+      ms_statut_occupation:(data.answers['statut_occupation']||data.answers['Situation']||data.answers['Propriétaire']||null),
+      ms_possede_voiture:(typeof data.answers['possede_voiture']!=='undefined'?data.answers['possede_voiture']:null),
+      ms_reponses:Object.assign({prenom:data.prenom||null,nom:data.nom||null,email:data.email||null,telephone:data.telephone||null,code_postal:data.cp||null,ville:data.ville_ip||null},data.answers)
+    };
+    fetch(CONFIG.supabaseUrl.replace(/\/$/,'')+'/rest/v1/'+CONFIG.supabaseTable+'?on_conflict=ms_session_id', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':CONFIG.supabaseKey,'Authorization':'Bearer '+CONFIG.supabaseKey,'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body: JSON.stringify(row)
+    }).catch(function(){});
+  }
+
+  ['i-prenom','i-nom','i-cp','i-tel','i-email'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    el.addEventListener('input',function(){ this.classList.remove('bad'); var e=document.getElementById('e-'+id.split('-')[1]); if(e)e.classList.remove('on'); });
+  });
+
+  (function(){ if(emailFromUrl){ var em=document.getElementById('i-email'); if(em) em.value=emailFromUrl; } })();
+
+  /* ---- nom du cadeau ---- */
+  (function(){
+    var gl=document.getElementById('giftLine'); if(gl) gl.textContent='Tentez de gagner '+CONFIG.giftName;
+    var gi=document.getElementById('giftInline'); if(gi) gi.textContent=CONFIG.giftName;
+  })();
+
+  /* ---- boucle concours (locataire / sans cr\u00e9dit) ---- */
+  window.submitRefer = function(){
+    var emails = ['ref1','ref2','ref3'].map(function(id){return document.getElementById(id).value.trim();})
+                  .filter(function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);});
+    if(emails.length===0){ alert('Indiquez au moins un email valide.'); return; }
+    if(!document.getElementById('ref-consent').checked){ alert('Veuillez confirmer le consentement.'); return; }
+    data.parrainages = emails; saveProgress('parrainage', true);
+    goStep('s-final-thanks');
+  };
+
+  window.toComparateur = function(){
+    if(CONFIG.comparateurUrl){
+      var em = emailFromUrl || data.email || '';
+      var dest = CONFIG.comparateurUrl.replace('&email=', '&email=' + encodeURIComponent(em));
+      try{ window.top.location.href = dest; } catch(e){ window.location.href = dest; }
+    } else { goStep('s-final-thanks'); }
+  };
+
+  function fmtEur(n){ return Math.round(n).toLocaleString('fr-FR'); }
+  var REDUCTION=0.25; // -25% (fourchette moyenne 15-30%)
+  function pct(v){ return Math.round((v-200)/(3000-200)*100); }
+  function updateCalc(){
+    var sl=document.getElementById('mensSlider'); if(!sl) return;
+    var mens=+sl.value;
+    var save=Math.round(mens*REDUCTION/10)*10;
+    var nouvelle=mens-save;
+    document.getElementById('mensVal').textContent=fmtEur(mens);
+    document.getElementById('newMens').textContent=fmtEur(nouvelle);
+    document.getElementById('saveMonth').textContent=fmtEur(save)+' \u20ac';
+    var p=pct(mens);
+    sl.style.background='linear-gradient(90deg,#16294d '+p+'%,#d3dbe6 '+p+'%)';
+    data.answers.mensualites_actuelles=mens;
+    data.answers.mensualite_estimee=nouvelle;
+    data.answers.allegement_mensuel_estime=save;
+  }
+  (function(){ var sl=document.getElementById('mensSlider'); if(sl){ sl.addEventListener('input',updateCalc); updateCalc(); } })();
+  window.startSimu=function(){ saveProgress('q-simulation', false); goStep('s-cp'); };
+
+  if(emailFromUrl){ saveProgress('page-vue', false); }
+
+})();
+</script>
+</body>
+</html>
