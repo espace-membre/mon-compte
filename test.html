@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostic Connexion GitHub -> PlanetHoster</title>
+<style>
+    body { font-family: monospace; padding: 20px; background: #1e1e2e; color: #cdd6f4; }
+    .box { background: #313244; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    button { padding: 10px 16px; cursor: pointer; font-weight: bold; border-radius: 5px; border: none; background: #89b4fa; color: #11111b; margin-right: 10px; }
+    button:hover { background: #b4befe; }
+    pre { background: #11111b; padding: 12px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+    .ok { color: #a6e3a1; font-weight: bold; }
+    .err { color: #f38ba8; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h2>Outil de diagnostic AJAX (GitHub Pages -> PlanetHoster)</h2>
+
+<div class="box">
+    <p><strong>URL cible :</strong> <span id="target-url">https://lespetitscoquins.fr/p/smartlink.php</span></p>
+    <button onclick="testGet()">1. Tester le GET (get_template)</button>
+    <button onclick="testPost()">2. Tester le POST (get_links / Clic bouton)</button>
+</div>
+
+<div class="box">
+    <h3>Journal des résultats :</h3>
+    <pre id="logs">En attente d'un test...</pre>
+</div>
+
+<script>
+var baseUrl = "https://lespetitscoquins.fr/p/smartlink.php";
+var logs = document.getElementById("logs");
+
+function logMessage(msg) {
+    logs.innerHTML += "\n" + msg;
+}
+
+// Test 1 : Requête GET (simule le chargement initial de la page)
+function testGet() {
+    logs.innerHTML = "⏳ Test GET en cours vers " + baseUrl + "?action=get_template ...";
+    var startTime = Date.now();
+
+    fetch(baseUrl + "?action=get_template", { 
+        method: "GET",
+        credentials: "include" 
+    })
+    .then(async function(response) {
+        var time = Date.now() - startTime;
+        var text = await response.text();
+        logMessage("Statut HTTP : " + response.status + " (" + time + " ms)");
+        
+        if (response.ok) {
+            logMessage('<span class="ok">✅ SUCCÈS GET : PlanetHoster répond bien en GET.</span>');
+        } else {
+            logMessage('<span class="err">❌ ERREUR HTTP : Le serveur a rejeté la requête (Code ' + response.status + ').</span>');
+        }
+        logMessage("\n--- Aperçu de la réponse brute du serveur ---\n" + text.substring(0, 500));
+    })
+    .catch(function(error) {
+        logMessage('<span class="err">❌ ÉCHEC RÉSEAU / CORS : Impossible de joindre le serveur.</span>');
+        logMessage("Détail : " + error.message);
+        logMessage("Causes probables : Blocage CORS, certificat SSL, ou pare-feu PlanetHoster qui coupe la connexion.");
+    });
+}
+
+// Test 2 : Requête POST (simule le clic sur le bouton)
+function testPost() {
+    logs.innerHTML = "⏳ Test POST en cours vers " + baseUrl + " (action=get_links) ...";
+    var startTime = Date.now();
+
+    var formData = new FormData();
+    formData.append("action", "get_links");
+
+    // Ajoute les paramètres de l'URL actuelle s'il y en a
+    var params = new URLSearchParams(window.location.search);
+    params.forEach(function(value, key) {
+        formData.append(key, value);
+    });
+
+    fetch(baseUrl, { 
+        method: "POST", 
+        body: formData, 
+        credentials: "include" 
+    })
+    .then(async function(response) {
+        var time = Date.now() - startTime;
+        var text = await response.text();
+        logMessage("Statut HTTP : " + response.status + " (" + time + " ms)");
+
+        if (response.ok) {
+            logMessage('<span class="ok">✅ SUCCÈS POST : Le serveur a accepté le POST.</span>');
+            try {
+                var json = JSON.parse(text);
+                logMessage("JSON valide reçu : " + JSON.stringify(json, null, 2));
+            } catch (e) {
+                logMessage('<span class="err">⚠️ ATTENTION : Le serveur a répondu (200 OK), mais ce n\'est pas du JSON valide (probablement une erreur PHP affichée dans le code) :</span>');
+            }
+        } else {
+            logMessage('<span class="err">❌ ERREUR HTTP ' + response.status + ' : PlanetHoster bloque ou plante sur la requête POST.</span>');
+        }
+        logMessage("\n--- Réponse brute du serveur ---\n" + text.substring(0, 500));
+    })
+    .catch(function(error) {
+        logMessage('<span class="err">❌ ÉCHEC RÉSEAU / CORS sur le POST :</span> ' + error.message);
+        logMessage("\nExplication : Si le test 1 (GET) marche mais que le test 2 (POST) échoue ici, c'est le pare-feu (WAF/ModSecurity) de PlanetHoster qui bloque les requêtes POST venant d'un domaine externe (github.io), ou il manque l'en-tête CORS 'Access-Control-Allow-Origin' sur les réponses d'erreur du serveur.");
+    });
+}
+</script>
+
+</body>
+</html>
